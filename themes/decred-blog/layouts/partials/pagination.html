@@ -1,0 +1,15 @@
+<nav class="pagination">
+  {{ if and (.Paginator.HasPrev) (.Paginator.HasNext) }}
+    <a href="{{ .Paginator.Prev.URL }}" class="newer-posts fa-chevron-left square fill-horizontal"><span class="screen-reader-text">Newer Posts</span></a>
+    <span class="page-number">Page {{ .Paginator.PageNumber }} of {{ .Paginator.TotalPages }}</span>
+    <a href="{{ .Paginator.Next.URL }}" class="older-posts fa-chevron-right square fill-horizontal"><span class="screen-reader-text">Older Posts</span></a>
+  {{ end }}
+  {{ if and (.Paginator.HasPrev) (not .Paginator.HasNext) }}
+    <a href="{{ .Paginator.Prev.URL }}" class="newer-posts fa-chevron-left square fill-horizontal"><span class="screen-reader-text">Newer Posts</span></a>
+    <span class="page-number">Page {{ .Paginator.PageNumber }} of {{ .Paginator.TotalPages }}</span>
+  {{ end }}
+  {{ if and (not .Paginator.HasPrev) (.Paginator.HasNext) }}
+    <span class="page-number">Page {{ .Paginator.PageNumber }} of {{ .Paginator.TotalPages }}</span>
+    <a href="{{ .Paginator.Next.URL }}" class="older-posts fa-chevron-right square fill-horizontal"><span class="screen-reader-text">Older Posts</span></a>
+  {{ end }}
+</nav>

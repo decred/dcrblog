@@ -1,0 +1,21 @@
+{{ $dateFormat := default "Mon Jan 2, 2006" (index .Site.Params "date_format") }}
+
+<article class="post">
+    <header class="entry-header"> 
+        <div class="entry-header-wrap">
+            
+            <a href="{{ .Permalink }}" class="post-thumbnail">
+                <img src="{{ .Params.banner_image }}" alt="{{ .Title | markdownify }} ">
+            </a>
+            
+            <h2 class="entry-title"><a href="{{ .Permalink }}" rel="bookmark" title="Permanent Link to {{ .Permalink }}">{{ .Title | markdownify }}</a></h2>
+        </div><!-- .entry-header-wrap -->
+        <div class="entry-meta">
+            by <span class="post-author">{{ .Render "author-link" }}</span> on <time class="published" datetime="{{.Date}}">{{ .Date.Format $dateFormat }}</time>
+        </div><!-- .entry-meta -->
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        {{ .Summary | truncate 750 }}
+        <p class="read-more"><a href="{{ .Permalink }}" class="more-link" title="read more">Read More</a></p>
+    </div><!-- .entry-content -->
+</article>

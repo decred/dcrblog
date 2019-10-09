@@ -1,0 +1,5 @@
+name = "decred-blog"
+description = "A simple Hugo theme for the Decred project blog."
+
+[author]
+  name = "Jamie Holdstock"

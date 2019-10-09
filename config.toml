@@ -1,0 +1,46 @@
+baseurl = "https://blog.decred.org/"
+languageCode = "en-us"
+title = "Decred Blog"
+theme = "decred-blog"
+
+paginate = 5
+
+copyright = "[DECRED BLOG](https://blog.decred.org/) ALL RIGHTS RESERVED."
+
+# disablePathToLower is necessary to maintain backwards compatability with old blog links
+disablePathToLower = true
+
+[taxonomies]
+  author = "authors"
+  tag = "tags"
+
+[permalinks]
+  posts = "/:year/:month/:day/:title/"
+
+# [[menu.sidebar]]
+#   name = "Link 1"
+#   url = "https://example.com"
+
+# [[menu.sidebar]]
+#   name = "Link 2"
+#   url = "https://example.org"
+
+[[menu.navbar]]
+  name = "GitHub"
+  url = "https://github.com/decred"
+
+# Theme variables
+[params]
+  # date_format describes how dates will be formatted throughout the blog.
+  # Specify with Go's time formatting syntax.
+  date_format = "January 2, 2006"
+
+  # Display post summaries instead of content in list templates (default: true)
+  #truncate = true
+
+  [params.sidebar]
+    num_recent_posts = 5
+
+  [params.social]
+    twitter = "decredproject"
+    github = "decred"

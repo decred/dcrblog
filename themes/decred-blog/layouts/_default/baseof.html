@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="{{ .Lang }}">
+
+  <head>
+
+    <link rel="canonical" href="{{ .Permalink }}">
+
+    <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>
+
+    {{ "<!-- combined, minified CSS -->" | safeHTML }}
+    {{ $style := resources.Get "sass/main.scss" | toCSS }}
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}">
+
+    <link rel="stylesheet" href="/css/SourceSansPro.css">
+    <link rel="stylesheet" href="/css/font-awesome-4.7.0.min.css">
+
+    {{ "<!-- RSS 2.0 feed -->" | safeHTML }}
+    {{ with .OutputFormats.Get "rss" -}}
+      {{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
+    {{ end -}}
+
+  </head>
+
+  <body>
+
+    {{ block "masthead" . }}
+      <nav class="nav site-navigation">
+        <div class="inner">
+          <div class="nav-menu">
+            <ul class="menu">
+              <li class="{{ if .IsHome }}nav-current{{ end }}">
+                <a class="nav-link {{ if .IsHome }}nav-current{{ end }}" href="/">Home</a>
+              </li>
+              {{- $currentPage := . -}}
+              {{ range .Site.Menus.navbar }}
+              {{ $menuURL := .URL | absLangURL }}
+              <li>
+                <a class="nav-link{{ if or ($currentPage.IsMenuCurrent "navbar" .) ($currentPage.HasMenuCurrent "navbar" .) }} active{{end}}" href="{{ .URL }}" title="{{ .Title }}">{{ .Name }}</a>
+              </li>
+              {{ end }}
+            </ul>
+          </div>
+        </div>
+      </nav>
+    {{ end }}
+
+    {{ block "header" . }}
+    <header class="site-header">
+        <div class="inner">
+	        <h1 class="site-title">
+            <a class="logo-text" href="/">
+              <img class="logo-art" src="/images/banner.png" alt="Decred Blog">
+            </a>
+          </h1>
+        </div><!-- .inner -->
+    </header>
+    {{ end }}
+
+    {{ block "body" . }}
+    <div class="site-content">
+      <div class="inner">
+        <main class="site-main">
+
+          {{ block "main" . }}
+          <!-- The part of the page that begins to differ between templates -->
+          {{ end }}
+
+        </main> {{ "<!-- /.blog-main -->" | safeHTML }}
+
+        {{ partial "sidebar.html" . }}
+
+      </div> {{ "<!-- /.row -->" | safeHTML }}
+    </div> {{ "<!-- /.container -->" | safeHTML }}
+    {{ end }}
+
+    {{ block "footer" . }}
+    <footer class="site-footer">
+      <div class="inner">
+          <div class="social-links">
+              <a href="https://twitter.com/{{ .Site.Params.Social.twitter}}" class="fa-twitter square fill-horizontal"><span class="screen-reader-text">Twitter</span></a>
+              <a href="https://github.com/{{ .Site.Params.Social.github}}" class="fa-github-alt square fill-horizontal"><span class="screen-reader-text">GitHub</span></a>
+          </div><!-- .social-links -->
+          <div class="site-info">
+              © <a href="/">{{ .Site.Copyright | markdownify }}<br>
+              <a href="#" id="top-link" class="fa-chevron-up top-link square fill-horizontal"><span class="screen-reader-text">Back to the top</span></a>
+          </div><!-- .site-info -->
+      </div>
+    </footer>
+    {{ end }}
+
+  </body>
+
+</html>
+

@@ -1,0 +1,69 @@
+{{ define "title" }}{{ .Title | markdownify }} | {{ .Site.Title }}{{ end }}
+
+{{ define "main" }}
+{{ $dateFormat := default "Mon Jan 2, 2006" (index .Site.Params "date_format") }}
+
+<article class="post">
+
+  <header class="entry-header"> 
+      <div class="entry-header-wrap">
+          
+          <div class="post-thumbnail">
+              <img src="{{ .Params.banner_image }}" alt="{{ .Title | markdownify }}">
+          </div><!-- .post-thumbnail -->
+          
+          <h1 class="entry-title">{{ .Title | markdownify }}</h1>
+      </div><!-- .entry-header-wrap -->
+      <div class="entry-meta">
+          by <span class="post-author">{{ .Render "author-link" }}</span> on <time class="published" datetime="{{.Date}}">{{ .Date.Format $dateFormat }}</time>
+      </div><!-- .entry-meta -->
+  </header>
+
+  <div class="entry-content">
+    {{ .Content }}
+  </div>
+
+  <footer class="entry-footer">
+    <div class="share-post">
+        <span>Share</span>
+        <a class="fa-twitter" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text={{ .Title }}&amp;url={{ .Permalink }}"><span class="screen-reader-text">Twitter</span></a>
+        <a class="fa-facebook" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u={{ .Permalink }}/&amp;t={{ .Title }}"><span class="screen-reader-text">Facebook</span></a>
+    </div>
+  </footer>
+
+</article> <!-- /.blog-post -->
+
+{{ .Render "author-box" }}
+
+<nav class="post-navigation">
+  
+  {{ with .PrevInSection }}
+    <div class="nav-previous">
+        <div class="nav-inside">
+            
+            <a href="{{ .Permalink }}" class="nav-thumb" style="background-image: url({{ .Params.banner_image }})"></a>
+            
+            <div class="nav-before">Previous</div>
+            <div class="nav-title"><a href="{{ .Permalink }}">{{ .Title }}</a></div>
+            <div class="nav-date">{{ .Date.Format $dateFormat }}</div>
+        </div><!-- .nav-inside -->
+    </div><!-- .nav-previous -->
+  {{ end }}
+    
+    
+  {{ with .NextInSection }}
+    <div class="nav-next">
+        <div class="nav-inside">
+            
+            <a href="{{ .Permalink }}" class="nav-thumb" style="background-image: url({{ .Params.banner_image }})"></a>
+            
+            <div class="nav-before">Next</div>
+            <div class="nav-title"><a href="{{ .Permalink }}">{{ .Title }}</a></div>
+            <div class="nav-date">{{ .Date.Format $dateFormat }}</div>
+        </div><!-- .nav-inside -->
+    </div><!-- .nav-next -->
+  {{ end }}
+    
+</nav>
+
+{{ end }}
