@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">    
+    <title>Politeia: Proposals in a Timestamped Filesystem</title> 
+    <meta name="description" content="Decred is an open and progressive cryptocurrency with a system of community-based governance integrated into its blockchain.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/mstile-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" type="text/css" href="/css/fonts-lato.css" />
+    <link rel="stylesheet" href="/css/fonts-ssp.css">
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="canonical" href="https://blog.decred.org/2017/10/25/Politeia/">
+    <link rel="alternate" type="application/rss+xml" title="Decred Blog Feed" href="https://blog.decred.org/feed.xml">
+</head>
+<body>
+    <nav id="top" class="site-navigation">
+        <div class="inner">
+            <button id="menu-toggle" aria-expanded="false">Menu</button>
+            <div class="nav-menu">
+                <ul class="menu">
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="/">Home</a>
+                  </li>
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="https://github.com/decred/">Github</a>
+                  </li>
+                
+                </ul>        
+            </div><!-- .nav-menu -->
+            <a class="subscribe-button fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">Subscribe</span></a>
+        </div><!-- .inner -->
+    </nav><!-- .site-navigation -->
+    <header class="site-header">
+        <div class="inner">
+	    <h1 class="site-title"><a class="logo-text" href="/"><img class="logo-art" src="/images/banner.png" alt="Decred Blog"></a></h1>
+        </div><!-- .inner -->
+    </header>
+    <div class="site-content">
+    <div class="inner">
+        <main class="site-main">
+            <article class="post">
+                <header class="entry-header"> 
+                    <div class="entry-header-wrap">
+                        
+                        <div class="post-thumbnail">
+                            <img src="/images/posts/politeia.jpg" alt="Politeia: Proposals in a Timestamped Filesystem">
+                        </div><!-- .post-thumbnail -->
+                        
+                        <h1 class="entry-title">Politeia: Proposals in a Timestamped Filesystem</h1>
+                    </div><!-- .entry-header-wrap -->
+                    <div class="entry-meta">
+                        by <span class="post-author">Jake Yocom-Piatt</span> on <time class="published" datetime="2017-10-25">October 25, 2017</time>
+                    </div><!-- .entry-meta -->
+                </header><!-- .entry-header -->
+                <div class="entry-content">
+                    <p>Rather than settling for governance infrastructure that is just good enough to get the job done, we opted to create what we consider to be the ideal infrastructure for self-governance of a cryptocurrency.  We call our system for storing governance data <a href="https://github.com/decred/politeia/">Politeia</a>, which is based on the ancient Greek term, meaning “a system of government”.  Politeia is a system for storing off-chain data that is both versioned and timestamped, essentially “git, a popular revision control system, plus timestamping”.  Instead of attempting to store all the data related to Decred’s governance on-chain, we have opted to create an off-chain store of data that is anchored into Decred’s blockchain, minimizing its on-chain footprint.  While we will use it first as the basis for our proposal system, it has been developed as a generic tool that allows its users to create and maintain arbitrary data in a version-controlled and timestamped environment.  Politeia can be used without holding any decred, although it does depend on using a <a href="https://blog.decred.org/2017/06/14/Dcrtime/">dcrtime</a> server for creating timestamps.  In addition to making the initial release of Politeia, we are excited to announce a competition for projects based on Politeia, with winners announced at an event in Austin, Texas on December 1st, 2017.  The prizes for 1st, 2nd and 3rd place will be the equivalent of USD 10,000, USD 5,000 and USD 2,000, respectively, paid in decred.</p>
+
+<!--more-->
+
+<h3>Motivation</h3>
+
+<p>As part of Decred’s work to create a sustainable and fair system of governance, we asked the question “how should we store data related to Decred’s governance?”.  Since Decred is a cryptocurrency, a natural option would be to store this data directly on Decred’s blockchain. However, as many cryptocurrency users are aware, this is an incredibly inefficient way to store this data.  Further, a governance system will necessarily generate contentious content over time, so the question of “do we want all this data stored directly in our blockchain?” has a rather obvious answer of “no”.  In lieu of storing this data on the blockchain, the next best thing we can do is to store this data in a version-controlled repository with timestamps anchored in the blockchain.</p>
+
+<p>The larger goal with Politeia is to create a resilient public record that mimics the function of typical nation state websites for their governance bodies, e.g. senate.gov or house.gov.  Having cryptographically verifiable public records will give users of Politeia the assurance that their governance is being executed in a transparent fashion, with all records independently verifiable and stored in a format that is difficult to forge.  By making Decred’s governance data time-ordered in a verifiable fashion, we ensure that attempts to manipulate Decred’s governance, either from outside or within, will be much more difficult than when using a conventional website or similar.</p>
+
+<h3>Technical Summary</h3>
+
+<p>The rough idea is “git plus timestamping”, and rather than reinvent the wheel, Politeia makes direct use of git for revision control.  Git is an excellent tool for revision control, but it gives only limited assurances as to when a particular change was made, e.g. you can recreate a git repository with fake timestamps without much effort.  As you can imagine, this ability to arbitrarily recreate a git repository makes it a less-than-ideal candidate for creating an indisputable format for recording data.  However, by adding cryptographic timestamping to git, we obtain a means of recording data that cannot be arbitrarily rewritten.  Episodically “anchoring” a repository’s commit hash into the Decred chain using dcrtime and then committing the anchor data to the same repository creates a time-ordering that is computationally infeasible to recreate.</p>
+
+<p>Anchors stored in the git repository include a transaction hash and a merkle path, where the merkle path hashes down to the merkle root contained in the transaction corresponding to the transaction hash.  This transaction hash, merkle path and Decred’s blockchain are the minimal set of data required to independently verify an anchor is valid, indicating that a particular git commit hash existed before the timestamp on the next anchor in its repository.  This time-ordering, combined with git’s standard process of hashing commit data to generate a commit hash, is a means of demonstrating the provenance, i.e. origin or source, of that data.</p>
+
+<p>In the context of proposals in Decred, we will be restricting proposals to text with markdown and PNG images.  This is being done to limit potential security issues that come with other more complex data formats, e.g. ZIP or PDF.  While markdown and PNGs are not exactly glamorous formats, they are simple and sufficient to express any reasonable proposal.</p>
+
+<p>Since Politeia will require manual review of submitted proposals, we created 2 statuses for new proposals: unvetted and vetted.  This classification is useful because data submitted for inclusion may have formatting errors, contain inappropriate content, or need to satisfy other constraints before it is included into Politeia.  Each proposal submission has a corresponding censorship token issued which allows a proposal submitter to publicly demonstrate that their proposal was censored, in the case that one of the administrators censors it.  This censorship token allows for Politeia to avoid one of the more insidious and common practices of modern social media sites, where data is silently censored.  By using censorship tokens, Politeia creates a transparent censorship process, so administrators can be held publicly accountable for their censorship actions, when found to be acting inappropriately.</p>
+
+<h3>Use cases</h3>
+
+<p>For Decred, Politeia will provide an unalterable public record of proposals, comments on proposals, and stakeholder votes.  Although Decred will be using Politeia in a public capacity, it can provide similar utility as a private unalterable store of data.  This generic concept of versioned and timestamped data can be applied in numerous public and private use cases, e.g. document and record storage, reputation and identity systems, and supply chains.</p>
+
+<h3>Using Politeia</h3>
+
+<p>The Politeia backend can currently be used to store flat text, markdown and PNG images.  While this list of acceptable file types is quite short, it can easily be expanded to include other types of files, as needed.  Currently, Politeia supports creating new user accounts, users submitting proposals, administrators reviewing those proposals, and administrators either approving or censoring them.</p>
+
+<p>Decred users are expected to use the Politeia web interface for making comments and submitting proposals.  Developers who are interested in exploring alternative applications of Politeia can use the command line interface to interact directly with the backend, per <a href="https://github.com/decred/politeia#example">the example on GitHub</a>.</p>
+
+<h3>Politeia Frontend</h3>
+
+<p>The backend portion of Politeia is mostly complete, but the frontend is rather minimal and a work-in-progress.  The frontend of Politeia is a web interface, written using React and Redux, along with a user management system.  Currently, this interface is in a very raw state and will be getting a steady stream of updates over the next few weeks.  The Politeia frontend has been designed with an eye to embedding it directly into Decrediton, our GUI wallet.</p>
+
+<p>Comments on proposals, editing proposals and voting on proposals will be added (in that order) over the next few weeks.  During this time, we will be maintaining and updating a public test server for Politeia at <a href="https://test-proposals.decred.org/">test-proposals.decred.org</a>, so users can participate via the frontend while features are being added.  After running this public test server for a while and adding the missing features, we will reset the system and formally initiate our permanent public proposal system.  In the meantime, users are encouraged to give feedback after using our public test server.</p>
+
+<h3>Contest Announcement</h3>
+
+<p>Since Politeia has many potential uses and we can only reasonably explore a few of them ourselves due to time constraints, we are announcing a competition for alternate uses of Politeia.  The competition will run between now and December 1st, 2017, and we will invite the most promising competitors to give presentations at a 1-day conference in Austin, TX.  In terms of requirements, submissions must be based on the Politeia source code and be prepared for a short public demonstration.  Competitors are encouraged to work in small groups and registration is open to everyone, whether local or remote.  The winners will be announced at the conference in Austin, and prizes will be for USD 10,000 (1st place), USD 5,000 (2nd place), and USD 2,000 (3rd place), payable directly in decred.  Due to having roughly 5 weeks to prepare a submission between now and this event in Austin, applicants are expected to demo software at the proof-of-concept level.  This means that we expect submissions to be necessarily sparse on features, but they must demonstrate that the idea works and has utility beyond our proposal system.  To prevent too many submissions of the same type, we suggest competitors contact the user ingsoc on Slack to check whether a particular application is already being worked on by another competitor.</p>
+
+<h3>Conclusion</h3>
+
+<p>Politeia is a continuation of Decred’s commitment to delivering governance infrastructure that is novel and high-utility.  Creating a permanent public record of the history of Decred’s governance is an important step towards a more transparent and effective method of governance.  Any proposal submitted to Politeia that is censored can be publicly demonstrated as having been censored, creating accountability for the administrators of the proposal system.  There are myriad potential uses for Politeia, and we are excited to see what competitors come up with for the event on December 1st.  If you’re interested in getting in touch and discussing Politeia, please contact us on <a href="https://github.com/decred/politeia/">GitHub</a>, <a href="https://decred.slack.com/">Slack</a>, <a href="https://reddit.com/r/decred/">Reddit</a> or <a href="https://forum.decred.org/">our Forum</a>.</p>
+
+                </div><!-- .entry-content -->
+                <footer class="entry-footer">
+                    <div class="share-post">
+                        <span>Share</span>
+                        <a class="fa-twitter" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text=Politeia:%20Proposals%20in%20a%20Timestamped%20Filesystem&amp;url=https://blog.decred.org/2017/10/25/Politeia/"><span class="screen-reader-text">Twitter</span></a>
+                        <a class="fa-facebook" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.decred.org/2017/10/25/Politeia/&amp;t=Politeia:%20Proposals%20in%20a%20Timestamped%20Filesystem"><span class="screen-reader-text">Facebook</span></a>
+                        <a class="fa-google-plus" target="_blank" rel="noopener noreferrer" href="http://plus.google.com/share?url=https://blog.decred.org/2017/10/25/Politeia/"><span class="screen-reader-text">Google+</span></a>
+                    </div><!-- .share-post -->
+                    
+                    <div class="tag-links">
+                        Tags: <a href="/tags/index.html#Decred" title="Pages tagged Decred" rel="tag">Decred</a><a href="/tags/index.html#Politeia" title="Pages tagged Politeia" rel="tag">Politeia</a><a href="/tags/index.html#proposal+system" title="Pages tagged proposal system" rel="tag">proposal system</a><a href="/tags/index.html#timestamped+filesystem" title="Pages tagged timestamped filesystem" rel="tag">timestamped filesystem</a><a href="/tags/index.html#dcrtime" title="Pages tagged dcrtime" rel="tag">dcrtime</a>
+                    </div>
+                    
+                </footer><!-- .entry-footer -->
+            </article><!-- .post -->
+            <div class="author-box">
+                <div class="author-info">
+                    <div class="author-avatar" style="background-image: url(/images/jy-p_300x300.png)"><span class="screen-reader-text">Jake Yocom-Piatt's Picture</span></div>
+                    <div class="author-details">
+                        <h2 class="author-title">About Jake Yocom-Piatt</h2>
+                        <p class="author-bio">Decred project organizer!</p>
+                        <span class="author-location"><i class="fa-map-marker" aria-hidden="true"></i> Chicago, US</span>
+                        <span class="author-website"><i class="fa-chain" aria-hidden="true"></i> <a href="https://twitter.com/decredproject" target="_blank" rel="noopener noreferrer"> https://twitter.com/decredproject</a></span>
+                    </div><!-- .author-details -->
+                </div><!-- .author-info -->
+            </div><!-- .author-box -->
+            <nav class="post-navigation">
+                <h2 class="screen-reader-text">Post navigation</h2>
+                
+                <div class="nav-previous">
+                    <div class="nav-inside">
+                        
+                        <a href="/2017/09/20/On-Chain-Atomic-Swaps/" class="nav-thumb" style="background-image: url(/images/posts/atomic_swap.png)"></a>
+                        
+                        <div class="nav-before">Previous</div>
+                        <div class="nav-title"><a href="/2017/09/20/On-Chain-Atomic-Swaps/">On-Chain Atomic Swaps</a></div>
+                        <div class="nav-date">September 20, 2017</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-previous -->
+                
+                
+                <div class="nav-next">
+                    <div class="nav-inside">
+                        
+                        <a href="/2017/11/03/Politeia-Platform-Challenge/" class="nav-thumb" style="background-image: url(/images/posts/politeia-challenge.jpg)"></a>
+                        
+                        <div class="nav-before">Next</div>
+                        <div class="nav-title"><a href="/2017/11/03/Politeia-Platform-Challenge/">Politeia Platform Challenge</a></div>
+                        <div class="nav-date">November 3, 2017</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-next -->
+                
+            </nav><!-- .post-navigation -->
+            
+        </main><!-- .site-main -->
+        <aside class="sidebar">
+
+    
+    <section class="widget widget-text">
+        <h2 class="widget-title">About Jake Yocom-Piatt</h2>
+        <p>Decred project organizer!</p>
+    </section><!-- .widget-text -->
+    
+
+    
+
+    <section class="widget widget-recent-posts">
+        <h2 class="widget-title">Latest Posts</h2>
+        <ul class="recent-posts">
+            
+            <li class="recent-item"><a href="/2019/08/28/Iterating-Privacy/">Iterating Privacy</a> <span>August 28, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2019/08/21/Surveying-the-Privacy-Landscape/">Surveying the Privacy Landscape</a> <span>August 21, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2018/10/15/Politeia-in-Production/">Politeia in Production</a> <span>October 15, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/06/05/A-New-Kind-of-DEX/">A New Kind of DEX</a> <span>June 5, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/02/28/2018-Decred-Roadmap/">2018 Decred Roadmap</a> <span>February 28, 2018</span></li>
+            
+        </ul><!-- .recent-posts -->
+    </section><!-- .widget-recent-posts -->
+
+    <!--Create a sorted array of tags-->
+    
+    
+    <section class="widget widget-tags">
+        <h2 class="widget-title">Tags</h2>
+        <div class="tagcloud">
+            
+            <a href="/tags/#Bitcoin">Bitcoin</a>
+            
+            <a href="/tags/#CoinShuffle%2B%2B">CoinShuffle++</a>
+            
+            <a href="/tags/#Confidential+Transactions">Confidential Transactions</a>
+            
+            <a href="/tags/#DAE">DAE</a>
+            
+            <a href="/tags/#DAO">DAO</a>
+            
+            <a href="/tags/#DEX">DEX</a>
+            
+            <a href="/tags/#Decred">Decred</a>
+            
+            <a href="/tags/#DiceMix">DiceMix</a>
+            
+            <a href="/tags/#LN">LN</a>
+            
+            <a href="/tags/#Lightning+Network">Lightning Network</a>
+            
+            <a href="/tags/#Litecoin">Litecoin</a>
+            
+            <a href="/tags/#OTC">OTC</a>
+            
+            <a href="/tags/#Politeia">Politeia</a>
+            
+            <a href="/tags/#Proof-of-Stake">Proof-of-Stake</a>
+            
+            <a href="/tags/#Proposal+System">Proposal System</a>
+            
+            <a href="/tags/#RFP">RFP</a>
+            
+            <a href="/tags/#SPV">SPV</a>
+            
+            <a href="/tags/#Stake+Difficulty">Stake Difficulty</a>
+            
+            <a href="/tags/#Ticket+Price">Ticket Price</a>
+            
+            <a href="/tags/#Treasury">Treasury</a>
+            
+            <a href="/tags/#atomic+swap">atomic swap</a>
+            
+            <a href="/tags/#best-practices">best-practices</a>
+            
+            <a href="/tags/#blockchain+anchor">blockchain anchor</a>
+            
+            <a href="/tags/#challenge">challenge</a>
+            
+            <a href="/tags/#consensus">consensus</a>
+            
+            <a href="/tags/#contractors">contractors</a>
+            
+            <a href="/tags/#cryptocurrency">cryptocurrency</a>
+            
+            <a href="/tags/#database">database</a>
+            
+            <a href="/tags/#dcrd">dcrd</a>
+            
+            <a href="/tags/#dcrtime">dcrtime</a>
+            
+            <a href="/tags/#dcrwallet">dcrwallet</a>
+            
+            <a href="/tags/#decentralized+exchange">decentralized exchange</a>
+            
+            <a href="/tags/#decentralized+regulation">decentralized regulation</a>
+            
+            <a href="/tags/#developers">developers</a>
+            
+            <a href="/tags/#exchange">exchange</a>
+            
+            <a href="/tags/#gominer">gominer</a>
+            
+            <a href="/tags/#governance">governance</a>
+            
+            <a href="/tags/#hard+fork">hard fork</a>
+            
+            <a href="/tags/#hard+fork+voting">hard fork voting</a>
+            
+            <a href="/tags/#instant+messaging">instant messaging</a>
+            
+            <a href="/tags/#integration">integration</a>
+            
+            <a href="/tags/#lnd">lnd</a>
+            
+            <a href="/tags/#meltdown">meltdown</a>
+            
+            <a href="/tags/#payment">payment</a>
+            
+            <a href="/tags/#paymetheus">paymetheus</a>
+            
+            <a href="/tags/#post-quantum">post-quantum</a>
+            
+            <a href="/tags/#privacy">privacy</a>
+            
+            <a href="/tags/#proposal+system">proposal system</a>
+            
+            <a href="/tags/#researchers">researchers</a>
+            
+            <a href="/tags/#roadmap">roadmap</a>
+            
+            <a href="/tags/#secure+communications">secure communications</a>
+            
+            <a href="/tags/#security">security</a>
+            
+            <a href="/tags/#smart+contracts">smart contracts</a>
+            
+            <a href="/tags/#soft+fork">soft fork</a>
+            
+            <a href="/tags/#spectre">spectre</a>
+            
+            <a href="/tags/#support">support</a>
+            
+            <a href="/tags/#timestamped+filesystem">timestamped filesystem</a>
+            
+            <a href="/tags/#verifiable+volume">verifiable volume</a>
+            
+            <a href="/tags/#zkc">zkc</a>
+            
+        </div><!-- .tagcloud -->
+    </section><!-- .widget -->
+
+</aside><!-- .sidebar -->
+
+    </div><!-- .inner -->
+</div><!-- .site-content -->
+
+    <footer class="site-footer">
+    <div class="inner">
+        <div class="social-links">
+            
+            <a href="https://twitter.com/decredproject" class="fa-twitter square fill-horizontal"><span class="screen-reader-text">Twitter</span></a>
+            
+            
+            
+            
+            <a href="https://github.com/decred" class="fa-github-alt square fill-horizontal"><span class="screen-reader-text">GitHub</span></a>
+            
+            
+            
+            
+            
+            
+            
+            <a class="fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">RSS</span></a>
+        </div><!-- .social-links -->
+        <div class="site-info">
+            &copy; <a href="/">Decred Blog</a> all rights reserved. <br />
+            <a href="#top" id="top-link" class="fa-chevron-up top-link square fill-horizontal"><span class="screen-reader-text">Back to the top</span></a>
+        </div><!-- .site-info -->
+    </div><!-- .inner -->
+</footer><!-- .site-footer -->
+
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/plugins.js"></script>
+    <script type="text/javascript" src="/js/custom.js"></script>
+</body>
+</html>

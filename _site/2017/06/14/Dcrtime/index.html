@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">    
+    <title>dcrtime: Blockchain-based Timestamps</title> 
+    <meta name="description" content="Decred is an open and progressive cryptocurrency with a system of community-based governance integrated into its blockchain.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/mstile-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" type="text/css" href="/css/fonts-lato.css" />
+    <link rel="stylesheet" href="/css/fonts-ssp.css">
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="canonical" href="https://blog.decred.org/2017/06/14/Dcrtime/">
+    <link rel="alternate" type="application/rss+xml" title="Decred Blog Feed" href="https://blog.decred.org/feed.xml">
+</head>
+<body>
+    <nav id="top" class="site-navigation">
+        <div class="inner">
+            <button id="menu-toggle" aria-expanded="false">Menu</button>
+            <div class="nav-menu">
+                <ul class="menu">
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="/">Home</a>
+                  </li>
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="https://github.com/decred/">Github</a>
+                  </li>
+                
+                </ul>        
+            </div><!-- .nav-menu -->
+            <a class="subscribe-button fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">Subscribe</span></a>
+        </div><!-- .inner -->
+    </nav><!-- .site-navigation -->
+    <header class="site-header">
+        <div class="inner">
+	    <h1 class="site-title"><a class="logo-text" href="/"><img class="logo-art" src="/images/banner.png" alt="Decred Blog"></a></h1>
+        </div><!-- .inner -->
+    </header>
+    <div class="site-content">
+    <div class="inner">
+        <main class="site-main">
+            <article class="post">
+                <header class="entry-header"> 
+                    <div class="entry-header-wrap">
+                        
+                        <div class="post-thumbnail">
+                            <img src="/images/posts/in_time_counter.gif" alt="dcrtime: Blockchain-based Timestamps">
+                        </div><!-- .post-thumbnail -->
+                        
+                        <h1 class="entry-title">dcrtime: Blockchain-based Timestamps</h1>
+                    </div><!-- .entry-header-wrap -->
+                    <div class="entry-meta">
+                        by <span class="post-author">Marco Peereboom</span> on <time class="published" datetime="2017-06-14">June 14, 2017</time>
+                    </div><!-- .entry-meta -->
+                </header><!-- .entry-header -->
+                <div class="entry-content">
+                    <p>Per the 2017 Decred Roadmap, one of the major deliverables is a proposal system that allows users to participate in the governance of Decred.  The proposal system will have 2 main components: a blockchain-based timestamping service and a public version-controlled repository for proposal data.  The subject of this entry is dcrtime, the timestamping component.  Dcrtime was written by Marco Peereboom over the past couple months and is the result of collaboration between Marco, Jake Yocom-Piatt and Dave Collins.  The primary motivation for dcrtime is the desire for the proposal system to have maximum transparency and accountability, while having a minimal onchain footprint.  In terms of its onchain footprint and overall design, dcrtime draws on the work of Peter Todd’s <a href="https://petertodd.org/2016/opentimestamps-announcement">opentimestamps</a>, which allows a nearly unlimited number of hashes to be timestamped onchain with the inclusion of a single merkle root in a transaction.  The process used by dcrtime can be summarized as follows:</p>
+
+<ul>
+  <li>allow users to submit 32-byte hashes, which are accumulated, organized into a merkle tree and hashed down to a merkle root</li>
+  <li>create an episodic onchain transaction that includes that merkle root</li>
+  <li>allow users to verify their data is timestamped by responding to queries by hash with the corresponding merkle root, transaction hash and a merkle path for that hash once the transaction is mined</li>
+</ul>
+
+<p>Although dcrtime has been designed as a component of the proposal system, it is expected to have generic utility as a public timestamping service.  Any third party that is interested in using dcrtime to generate externally verifiable timestamps can do so free of charge by using our public mainnet server.  We expect this to be particularly useful in scenarios where transparency, accountability and time-ordering are of key importance, in either a public or a private context, e.g. computer security, data integrity and various compliance contexts.  A more detailed discussion of dcrtime can be found below.</p>
+
+<!--more-->
+
+<h3>dcrtime architecture</h3>
+
+<p>The dcrtime service is comprised of four components:</p>
+
+<figure class="caption">
+    <img src="/images/posts/dcrtime_stack.png" alt="dcrtime architectural overview" />
+    
+    <figcaption class="caption-text">dcrtime architectural overview</figcaption>
+    
+</figure>
+
+<p>The proxy is a simple daemon that proxies dcrtime API calls to the non-public dcrtime server.  The proxy and server are  in fact the same daemon but run in either proxy or server mode.  The reason these two daemons are separated is to prevent a daemon sitting on the internet with a wallet passphrase in memory and also in order to be able to scale the frontend.  It accepts a JSON REST API call and ensures it can be decoded and immediately transmits it to the backend daemon that does the work.  The reply from the dcrtime server is also relayed back to the caller. The magic really happens in the dcrtime server, and for the remainder of this entry, we will not make further mention of the proxy.</p>
+
+<p>Now that it is clear how dcrtime works in conjunction with dcrd and dcrwallet, it is useful to understand how it fits into the larger proposal system.  The proposal system’s second component, a version-controlled repository, will episodically drop timestamped “anchors”.  As data is added to the proposal repository, each commit has a corresponding hash, and commit hashes will episodically be timestamped using dcrtime.  Anchored hashes will have their corresponding merkle path and transaction hash stored in the proposal repository once the transaction containing the merkle root is mined.  By storing the anchor data in the proposal repository, the proposal system can have all of its commits and anchors verified against a copy of the Decred blockchain.</p>
+
+<figure class="caption">
+    <img src="/images/posts/proposal_system.png" alt="decred proposal system" />
+    
+    <figcaption class="caption-text">decred proposal time</figcaption>
+    
+</figure>
+
+<h3>dcrtime example</h3>
+
+<p>The server collects digests that are sent to it and every hour these digests are reduced to a single merkle root.  This merkle root is then anchored in the decred chain in a transaction.  An example of such a transaction on testnet can be seen <a href="https://testnet.decred.org/tx/554b27c309ac9a8dab8ae261bb13dcfcdd351aa5f196322c112f04d106e000f3">here</a>. The merkle root can be found in the entry that is an OP_RETURN followed by a digest.  In our example it is:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>OP_RETURN 9788d5d7b85f2b68ec21d26e738dce6cdd367ee0ec58b53ad6bd4d46b0bc3018
+</code></pre></div></div>
+
+<p>We included the client reference application which conveniently is called dcrtime. Uploading a digest to the server can be done as follows:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ dcrtime --testnet -v myfile.txt
+8496855341883fdc90cc532f8304d1c46a60586fb15d99f07e41bb5ab19c79c6 Upload myfile.txt
+8496855341883fdc90cc532f8304d1c46a60586fb15d99f07e41bb5ab19c79c6 OK     myfile.txt
+Collection timestamp: 1497009600
+</code></pre></div></div>
+
+<p>If we immediately ask the server for it the server will return information and indicate that it has not been anchored yet.  For example:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ dcrtime --testnet -v
+cd90cc268d9ceef6e276bfa7a615c5f85b5a27b0d917ee3f1f1e5d5598f2fa00
+cd90cc268d9ceef6e276bfa7a615c5f85b5a27b0d917ee3f1f1e5d5598f2fa00 Verify
+cd90cc268d9ceef6e276bfa7a615c5f85b5a27b0d917ee3f1f1e5d5598f2fa00 Not anchored
+
+</code></pre></div></div>
+
+<p>Once the digest has been anchored we can retrieve it and find out the transaction the merkle root was anchored in.  Note that the client does verify the merkle path that the server returns.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ dcrtime --testnet -v 8496855341883fdc90cc532f8304d1c46a60586fb15d99f07e41bb5ab19c79c6
+8496855341883fdc90cc532f8304d1c46a60586fb15d99f07e41bb5ab19c79c6 Verify
+8496855341883fdc90cc532f8304d1c46a60586fb15d99f07e41bb5ab19c79c6 OK
+  Chain Timestamp: 1497013614
+  Merkle Root    : 8496855341883fdc90cc532f8304d1c46a60586fb15d99f07e41bb5ab19c79c6
+  TxID           : 4172a560a7035c169c4da60cba2cb1fbac686bd01224e09a1a56ce5e6f31cff0
+</code></pre></div></div>
+
+<h3>Conclusion</h3>
+
+<p>dcrtime represents the first of two components of Decred’s proposal system.  Interested third parties can make use of the free public timestamping service provided via dcrtime, which runs hourly, on the hour, as of this post.  If you are interested in using dcrtime for timestamping, please <a href="https://decred.slack.com/">contact us on Slack</a> for assistance.  If you would like to comment on this article, <a href="https://forum.decred.org/threads/dcrtime-blockchain-based-timestamps.5423/">join us on the Decred Forum</a>.</p>
+
+                </div><!-- .entry-content -->
+                <footer class="entry-footer">
+                    <div class="share-post">
+                        <span>Share</span>
+                        <a class="fa-twitter" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text=dcrtime:%20Blockchain-based%20Timestamps&amp;url=https://blog.decred.org/2017/06/14/Dcrtime/"><span class="screen-reader-text">Twitter</span></a>
+                        <a class="fa-facebook" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.decred.org/2017/06/14/Dcrtime/&amp;t=dcrtime:%20Blockchain-based%20Timestamps"><span class="screen-reader-text">Facebook</span></a>
+                        <a class="fa-google-plus" target="_blank" rel="noopener noreferrer" href="http://plus.google.com/share?url=https://blog.decred.org/2017/06/14/Dcrtime/"><span class="screen-reader-text">Google+</span></a>
+                    </div><!-- .share-post -->
+                    
+                    <div class="tag-links">
+                        Tags: <a href="/tags/index.html#Decred" title="Pages tagged Decred" rel="tag">Decred</a><a href="/tags/index.html#Proposal+System" title="Pages tagged Proposal System" rel="tag">Proposal System</a><a href="/tags/index.html#dcrtime" title="Pages tagged dcrtime" rel="tag">dcrtime</a><a href="/tags/index.html#blockchain+anchor" title="Pages tagged blockchain anchor" rel="tag">blockchain anchor</a>
+                    </div>
+                    
+                </footer><!-- .entry-footer -->
+            </article><!-- .post -->
+            <div class="author-box">
+                <div class="author-info">
+                    <div class="author-avatar" style="background-image: url(/images/marco_300.png)"><span class="screen-reader-text">Marco Peereboom's Picture</span></div>
+                    <div class="author-details">
+                        <h2 class="author-title">About Marco Peereboom</h2>
+                        <p class="author-bio">Decred project manager</p>
+                        <span class="author-location"><i class="fa-map-marker" aria-hidden="true"></i> Austin, US</span>
+                        <span class="author-website"><i class="fa-chain" aria-hidden="true"></i> <a href="https://twitter.com/decredproject" target="_blank" rel="noopener noreferrer"> https://twitter.com/decredproject</a></span>
+                    </div><!-- .author-details -->
+                </div><!-- .author-info -->
+            </div><!-- .author-box -->
+            <nav class="post-navigation">
+                <h2 class="screen-reader-text">Post navigation</h2>
+                
+                <div class="nav-previous">
+                    <div class="nav-inside">
+                        
+                        <a href="/2017/05/23/Lightning-Network-in-Practice/" class="nav-thumb" style="background-image: url(/images/posts/lightning_in_practice.jpg)"></a>
+                        
+                        <div class="nav-before">Previous</div>
+                        <div class="nav-title"><a href="/2017/05/23/Lightning-Network-in-Practice/">Lightning Network in Practice</a></div>
+                        <div class="nav-date">May 23, 2017</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-previous -->
+                
+                
+                <div class="nav-next">
+                    <div class="nav-inside">
+                        
+                        <a href="/2017/07/25/Decred-Recruiting/" class="nav-thumb" style="background-image: url(/images/posts/dcr_needs_you.jpg)"></a>
+                        
+                        <div class="nav-before">Next</div>
+                        <div class="nav-title"><a href="/2017/07/25/Decred-Recruiting/">Decred Recruiting</a></div>
+                        <div class="nav-date">July 25, 2017</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-next -->
+                
+            </nav><!-- .post-navigation -->
+            
+        </main><!-- .site-main -->
+        <aside class="sidebar">
+
+    
+    <section class="widget widget-text">
+        <h2 class="widget-title">About Marco Peereboom</h2>
+        <p>Decred project manager</p>
+    </section><!-- .widget-text -->
+    
+
+    
+
+    <section class="widget widget-recent-posts">
+        <h2 class="widget-title">Latest Posts</h2>
+        <ul class="recent-posts">
+            
+            <li class="recent-item"><a href="/2019/08/28/Iterating-Privacy/">Iterating Privacy</a> <span>August 28, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2019/08/21/Surveying-the-Privacy-Landscape/">Surveying the Privacy Landscape</a> <span>August 21, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2018/10/15/Politeia-in-Production/">Politeia in Production</a> <span>October 15, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/06/05/A-New-Kind-of-DEX/">A New Kind of DEX</a> <span>June 5, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/02/28/2018-Decred-Roadmap/">2018 Decred Roadmap</a> <span>February 28, 2018</span></li>
+            
+        </ul><!-- .recent-posts -->
+    </section><!-- .widget-recent-posts -->
+
+    <!--Create a sorted array of tags-->
+    
+    
+    <section class="widget widget-tags">
+        <h2 class="widget-title">Tags</h2>
+        <div class="tagcloud">
+            
+            <a href="/tags/#Bitcoin">Bitcoin</a>
+            
+            <a href="/tags/#CoinShuffle%2B%2B">CoinShuffle++</a>
+            
+            <a href="/tags/#Confidential+Transactions">Confidential Transactions</a>
+            
+            <a href="/tags/#DAE">DAE</a>
+            
+            <a href="/tags/#DAO">DAO</a>
+            
+            <a href="/tags/#DEX">DEX</a>
+            
+            <a href="/tags/#Decred">Decred</a>
+            
+            <a href="/tags/#DiceMix">DiceMix</a>
+            
+            <a href="/tags/#LN">LN</a>
+            
+            <a href="/tags/#Lightning+Network">Lightning Network</a>
+            
+            <a href="/tags/#Litecoin">Litecoin</a>
+            
+            <a href="/tags/#OTC">OTC</a>
+            
+            <a href="/tags/#Politeia">Politeia</a>
+            
+            <a href="/tags/#Proof-of-Stake">Proof-of-Stake</a>
+            
+            <a href="/tags/#Proposal+System">Proposal System</a>
+            
+            <a href="/tags/#RFP">RFP</a>
+            
+            <a href="/tags/#SPV">SPV</a>
+            
+            <a href="/tags/#Stake+Difficulty">Stake Difficulty</a>
+            
+            <a href="/tags/#Ticket+Price">Ticket Price</a>
+            
+            <a href="/tags/#Treasury">Treasury</a>
+            
+            <a href="/tags/#atomic+swap">atomic swap</a>
+            
+            <a href="/tags/#best-practices">best-practices</a>
+            
+            <a href="/tags/#blockchain+anchor">blockchain anchor</a>
+            
+            <a href="/tags/#challenge">challenge</a>
+            
+            <a href="/tags/#consensus">consensus</a>
+            
+            <a href="/tags/#contractors">contractors</a>
+            
+            <a href="/tags/#cryptocurrency">cryptocurrency</a>
+            
+            <a href="/tags/#database">database</a>
+            
+            <a href="/tags/#dcrd">dcrd</a>
+            
+            <a href="/tags/#dcrtime">dcrtime</a>
+            
+            <a href="/tags/#dcrwallet">dcrwallet</a>
+            
+            <a href="/tags/#decentralized+exchange">decentralized exchange</a>
+            
+            <a href="/tags/#decentralized+regulation">decentralized regulation</a>
+            
+            <a href="/tags/#developers">developers</a>
+            
+            <a href="/tags/#exchange">exchange</a>
+            
+            <a href="/tags/#gominer">gominer</a>
+            
+            <a href="/tags/#governance">governance</a>
+            
+            <a href="/tags/#hard+fork">hard fork</a>
+            
+            <a href="/tags/#hard+fork+voting">hard fork voting</a>
+            
+            <a href="/tags/#instant+messaging">instant messaging</a>
+            
+            <a href="/tags/#integration">integration</a>
+            
+            <a href="/tags/#lnd">lnd</a>
+            
+            <a href="/tags/#meltdown">meltdown</a>
+            
+            <a href="/tags/#payment">payment</a>
+            
+            <a href="/tags/#paymetheus">paymetheus</a>
+            
+            <a href="/tags/#post-quantum">post-quantum</a>
+            
+            <a href="/tags/#privacy">privacy</a>
+            
+            <a href="/tags/#proposal+system">proposal system</a>
+            
+            <a href="/tags/#researchers">researchers</a>
+            
+            <a href="/tags/#roadmap">roadmap</a>
+            
+            <a href="/tags/#secure+communications">secure communications</a>
+            
+            <a href="/tags/#security">security</a>
+            
+            <a href="/tags/#smart+contracts">smart contracts</a>
+            
+            <a href="/tags/#soft+fork">soft fork</a>
+            
+            <a href="/tags/#spectre">spectre</a>
+            
+            <a href="/tags/#support">support</a>
+            
+            <a href="/tags/#timestamped+filesystem">timestamped filesystem</a>
+            
+            <a href="/tags/#verifiable+volume">verifiable volume</a>
+            
+            <a href="/tags/#zkc">zkc</a>
+            
+        </div><!-- .tagcloud -->
+    </section><!-- .widget -->
+
+</aside><!-- .sidebar -->
+
+    </div><!-- .inner -->
+</div><!-- .site-content -->
+
+    <footer class="site-footer">
+    <div class="inner">
+        <div class="social-links">
+            
+            <a href="https://twitter.com/decredproject" class="fa-twitter square fill-horizontal"><span class="screen-reader-text">Twitter</span></a>
+            
+            
+            
+            
+            <a href="https://github.com/decred" class="fa-github-alt square fill-horizontal"><span class="screen-reader-text">GitHub</span></a>
+            
+            
+            
+            
+            
+            
+            
+            <a class="fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">RSS</span></a>
+        </div><!-- .social-links -->
+        <div class="site-info">
+            &copy; <a href="/">Decred Blog</a> all rights reserved. <br />
+            <a href="#top" id="top-link" class="fa-chevron-up top-link square fill-horizontal"><span class="screen-reader-text">Back to the top</span></a>
+        </div><!-- .site-info -->
+    </div><!-- .inner -->
+</footer><!-- .site-footer -->
+
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/plugins.js"></script>
+    <script type="text/javascript" src="/js/custom.js"></script>
+</body>
+</html>

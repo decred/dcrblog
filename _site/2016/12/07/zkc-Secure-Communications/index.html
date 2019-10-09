@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">    
+    <title>zkc: Secure Communications</title> 
+    <meta name="description" content="Decred is an open and progressive cryptocurrency with a system of community-based governance integrated into its blockchain.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/mstile-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" type="text/css" href="/css/fonts-lato.css" />
+    <link rel="stylesheet" href="/css/fonts-ssp.css">
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="canonical" href="https://blog.decred.org/2016/12/07/zkc-Secure-Communications/">
+    <link rel="alternate" type="application/rss+xml" title="Decred Blog Feed" href="https://blog.decred.org/feed.xml">
+</head>
+<body>
+    <nav id="top" class="site-navigation">
+        <div class="inner">
+            <button id="menu-toggle" aria-expanded="false">Menu</button>
+            <div class="nav-menu">
+                <ul class="menu">
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="/">Home</a>
+                  </li>
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="https://github.com/decred/">Github</a>
+                  </li>
+                
+                </ul>        
+            </div><!-- .nav-menu -->
+            <a class="subscribe-button fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">Subscribe</span></a>
+        </div><!-- .inner -->
+    </nav><!-- .site-navigation -->
+    <header class="site-header">
+        <div class="inner">
+	    <h1 class="site-title"><a class="logo-text" href="/"><img class="logo-art" src="/images/banner.png" alt="Decred Blog"></a></h1>
+        </div><!-- .inner -->
+    </header>
+    <div class="site-content">
+    <div class="inner">
+        <main class="site-main">
+            <article class="post">
+                <header class="entry-header"> 
+                    <div class="entry-header-wrap">
+                        
+                        <div class="post-thumbnail">
+                            <img src="/images/posts/sneakers_glasses.png" alt="zkc: Secure Communications">
+                        </div><!-- .post-thumbnail -->
+                        
+                        <h1 class="entry-title">zkc: Secure Communications</h1>
+                    </div><!-- .entry-header-wrap -->
+                    <div class="entry-meta">
+                        by <span class="post-author">Jake Yocom-Piatt</span> on <time class="published" datetime="2016-12-07">December 7, 2016</time>
+                    </div><!-- .entry-meta -->
+                </header><!-- .entry-header -->
+                <div class="entry-content">
+                    <p>As part of our ongoing effort to “decentralize all the things”, we have developed secure communications software that we are open sourcing today, called zkc.  While zkc is not part of the Decred project proper, it is being released as part of our wider effort to increase individual liberty through technology.  zkc stands for “zero knowledge communications” and is intended to provide the highest level of communications security balanced with minimal complexity in its code, configuration and usage.  The various cryptographic protocols used in zkc draw from other existing secure communications tools, such as <a href="https://whispersystems.org">Signal</a> and <a href="https://github.com/agl/pond">Pond</a>.  zkc is a blending of what we consider to be the best parts of both of these projects, and with its initial release, it functions as an asynchronous instant messenger with the ability to push files.  It makes use of conventional ECDH TLS, <a href="https://whispersystems.org/docs/specifications/doubleratchet/">Double Ratchet Algorithm</a> using ed25519, salsa20 and poly1305 primitives, scrypt key derivation function, and SIGMA key exchange.  The server and client components, zkserver and zkclient, are designed such that they can both be setup in a matter of a few minutes, and require minimal effort to maintain.  For this initial release, zkc builds and runs on most platforms supported by golang, and is entirely text-based.  zkc should be considered alpha software as of this initial release.</p>
+
+<!--more-->
+
+<h3>Why did we make zkc?</h3>
+
+<p>zkc is an attempt to create a generic framework for secure communications, and instant messaging is a good place to start.  Speaking from the perspective of someone who has been a sysadmin for roughly 13 years, it is rather challenging to setup and maintain secure communications infrastructure.  Tools do exist to make this process easier, but it still requires a fair deal of domain knowledge and skill.  For example, here is a list of communications software I might typically setup: ircd-ratbox (IRC), postfix (SMTP), dovecot (IMAP), asterisk (SIP+RTP), sshfs, isakmpd (ISAKMP), openvpn, duplicity.  The ultimate goal is for zkc to allow for replacement of most or all of these tools and avoid the excessive knob-turning required to configure them properly.  As of this first release, zkc supports asynchronous instant messaging, which replaces IRC and part of what postfix, dovecot, isakmpd and openvpn accomplish, and the ability to push files, which has some overlap with postfix, dovecot, sshfs, isakmpd and openvpn.  In the future, we would like to add several features to move this process further along: pull support for files, synchronous audio/video communications and a backup mode.</p>
+
+<h3>Who created zkc?</h3>
+
+<p>zkc was designed by Marco Peereboom and I, Jake Yocom-Piatt, with the initial code written entirely by Marco between February and August 2015, with architectural input from Dave Collins.  We have been running zkc in production internally at Company 0 since roughly August 2015, and it is incredibly stable under most of our use conditions.  In the past few weeks, the code has been given a high-level vetting and review by Pedro Martelletto, one of our contractors, who has made several contributions to the code along the way.</p>
+
+<h3>Why not just use Signal or Pond?</h3>
+
+<p>This is a totally fair question and I expect that the average user is likely better off using Signal than zkc.  Signal has a much better UI and UX, easy-to-use apps for mobile and desktop platforms, a dedicated team supporting it, in-house cryptography experts, and substantial financial backing via Twitter.  In contrast, zkc only supports a text-based UI, has binaries for most desktop platforms, some part-time attention being paid to it by a couple developers, no cryptography experts, and some nominal financial support from yours truly.  That said, zkc is aiming to serve a different market than Signal, which I will explain below.</p>
+
+<p>Pond is more similar to zkc than Signal in terms of its text-based UI, limited support, code and financial backing.  Pond is not an instant messaging tool, rather, it is more “email on steroids” and meant for sending and receiving episodic larger messages and attachments that are not time-sensitive.  We found Pond to be complex to setup and challenging to use, especially due to the latency imposed by the way it connects to remote servers over Tor.  However, we did prefer the cryptography used by Pond, both in its choice of primitives for the double ratchet (ed25519, salsa20, poly1305) and its SIGMA key exchange.  The use of NVRAM in the TPM for key storage is a nice touch, but caused problems on machines that didn’t have a TPM.  In summary, Pond is a replacement for email, with security and privacy dialed to the maximum your hardware allows, along with all the challenges that entails.</p>
+
+<p>We have chosen to keep it simple with zkc and take what we felt were the best parts of both Signal and Pond.  zkc cuts the middle path between Signal and Pond in terms of UI/UX: it is not as easy to setup for clients as Signal, nor is it as challenging as Pond.  This initial release is made with the following considerations:</p>
+
+<ul>
+  <li>
+    <p>The UI is text-based and emulates the appearance of irssi, in order to keep UI-related complexity low and avoid large GUI toolkits as a dependency.</p>
+  </li>
+  <li>
+    <p>Sysadmins can optionally restrict the ability to create new accounts with zkserver, requiring either a fully manual process to add new users (see zkimport and zkexport) or allowing for an authentication code to be used.</p>
+  </li>
+  <li>
+    <p>zkc does not fully automate key exchange and instead uses a semi-automated process, to give users more fine-grained control over the keys they accept, both when connecting to the server and other users.  This semi-automated process is the result of zkserver not being considered a trusted piece of infrastructure: to automate key exchange requires trusting zkserver to maintain a directory of users’ information.</p>
+  </li>
+  <li>
+    <p>We intentionally did not create mobile apps because mobile devices are insecure by design.  Most mobile devices are effectively optionally-turned-on videocameras with microphones, GPS, gyroscope, and an unauditable data uplink.  This does not mean mobile apps will not happen in the future, but if you’re serious about secure comms, you should not be using a mobile device.</p>
+  </li>
+  <li>
+    <p>zkc has groupchat support, where the user that creates a given groupchat has sole authority to invite and kick participants. Instead of using a shared groupchat key or similar, messages are instead encrypted and sent to each groupchat member separately, making use of the existing ratchet with that peer.</p>
+  </li>
+  <li>
+    <p>zkc only supports connecting to a single server and a single identity, per instance.  We plan to add multi-server support in the future, and in the meantime we recommend using separate Vms for each instance of zkclient.</p>
+  </li>
+  <li>
+    <p>zkc makes use of code used in Pond since zkc, like Pond, is also written in golang.  Specifically, the double ratchet and SIGMA key exchange code are from Pond.</p>
+  </li>
+  <li>
+    <p>zkc does not support using a TPM for key storage since it creates many additional requirements in terms of OS and hardware.</p>
+  </li>
+  <li>
+    <p>zkc does not include any integration with Tor, e.g. using a hidden service.  It is straightforward to setup zkserver as a hidden service or use zkclient over Tor.</p>
+  </li>
+  <li>
+    <p>There are a couple notable unresolved bugs that users need to be aware of:</p>
+
+    <ul>
+      <li>
+        <p>Pasting large multi-line blocks of text has inconsistent behavior across platforms. Some OSes and hardware will lead to multiple lines being concatenated and looking ugly for the receiver.</p>
+      </li>
+      <li>
+        <p>Sudden hard power cycles or power loss can lead to ratchets with other users becoming corrupted. This requires a reset of corrupted ratchets.</p>
+      </li>
+      <li>
+        <p>There are a few troublesome corner cases that come up when resetting a corrupted ratchet.  These can be worked around, but have a bad UX associated with them.</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>With that out of the way, it is worth reiterating that zkc is alpha software, so it may contain some bugs.</p>
+
+<h3>How do you setup and use zkc?</h3>
+
+<p>The first step is either <a href="https://github.com/companyzero/zkc/releases/">downloading the binaries</a> or <a href="https://github.com/companyzero/zkc/">building the binaries from source</a>.  Once the binaries and default configuration files are on-hand, you can follow the instructions below.  Please note that these instructions assume you are using Linux, OSX or a BSD operating system.  The instructions for Windows are slightly different and depend on what software you have installed.</p>
+
+<h3>setup zkserver</h3>
+
+<p>Choose a machine or VM where zkserver will run and copy the binaries to it.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>scp zk<span class="k">*</span> your-server:/home/your-user/
+</code></pre></div></div>
+<p>Shell into the your-server host, create the configuration directory for zkserver, copy zkserver.conf to it, and change the listen, allowidentify, createpolicy and maxattachmentsize settings in zkserver.conf.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">mkdir</span> .zkserver
+<span class="nv">$ </span><span class="nb">mv </span>zkserver.conf .zkserver/
+
+edit ~/.zkserver/zkserver.conf and change
+listen <span class="o">=</span> 127.0.0.1:12345 <span class="nt">--</span><span class="o">&gt;</span> listen <span class="o">=</span> your-server-ip:12345
+allowidentify <span class="o">=</span> no <span class="nt">--</span><span class="o">&gt;</span> allowidentify <span class="o">=</span> <span class="nb">yes
+</span>createpolicty <span class="o">=</span> no <span class="nt">--</span><span class="o">&gt;</span> createpolicy <span class="o">=</span> token
+maxattachmentsize <span class="o">=</span> 104857600 <span class="nt">--</span><span class="o">&gt;</span> maxattachmentsize <span class="o">=</span> 1048576000
+</code></pre></div></div>
+<p>The default configuration is locked-down and requires editing to allow access.  By default, zkserver listens only locally, does not identify itself to remote hosts, does not allow clients to create new accounts and has a maximum attachment size of 10 MB.  In this example, we have set zkserver to listen on the local IP address for your-server, it will identify itself to remote clients, it will allow clients to create new accounts when they have a token, and the maximum attachment size has been increased to 100 MB.</p>
+
+<p>Start a terminal multiplexer, e.g. screen or tmux, run the binary inside it.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>./zkserver
+</code></pre></div></div>
+<p>Create a new panel in either screen or tmux and get a token for a new client.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>./zkservertoken
+5084 6135 3802 2707
+</code></pre></div></div>
+<h3>setup zkclient</h3>
+
+<p>This portion will need to be run for 2 clients, call them Alice and Bob.  Each client will require a separate authentication token, which can be obtained by running zkservertoken on the zkserver host.  The token and server fingerprints must be distributed to clients via another communications channel such as IRC, email, phone or text.</p>
+
+<p>Create the zkclient configuration directory, copy the configuration file to it, and edit the configuration file, changing</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">mkdir</span> ~/.zkclient
+<span class="nv">$ </span><span class="nb">cp </span>zkclienf.conf ~/.zkclient/
+
+edit ~/.zkclient/zkclient.conf and uncomment
+tlsverbose <span class="o">=</span> <span class="nb">yes</span>
+</code></pre></div></div>
+<p>Run zkclient, fill out the information required to connect to the server and accept the server keys, after verifying its fingerprints match those given.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>./zkclient
+</code></pre></div></div>
+<p style="text-align: center;"><img src="/images/posts/zkclient_server1.png" alt="zkclient setup page" title="zkclient setup page" /></p>
+<p style="text-align: center;"><img src="/images/posts/zkclient_server2.png" alt="zkclient server key information" title="zkclient server key information" /></p>
+
+<p>After 2 clients are successfully connected to the server, Alice initiates a key exchange, setting a key exchange password in the process, Alice passes her key exchange information to Bob (pin, passphrase and fingerprint), and Bob completes the key exchange, after verifying their identity fingerprint matches.  This process allows key exchange with several peers at once, via Alice sharing her key exchange information with several peers.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code> /kx <span class="o">(</span><span class="k">in </span>Alice zkclient<span class="o">)</span>
+</code></pre></div></div>
+<p style="text-align: center;"><img src="/images/posts/zkclient_kx1.png" alt="Alice setting key exchange password" title="Alice setting key exchange password" /></p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code> /fetch 123456 <span class="o">(</span><span class="k">in </span>Bob zkclient<span class="o">)</span>
+</code></pre></div></div>
+<p style="text-align: center;"><img src="/images/posts/zkclient_kx2.png" alt="Bob completing key exchange with Alice" title="Bob completing key exchange with Alice" /></p>
+
+<p>At this point Alice and Bob can message each other directly in zkclient by issuing ‘/q alice’ on Bob’s end and simply typing messages. To change to a particular chat window number, use the command ‘/w number’. To change to the chat window for a given user or groupchat, use the command ‘/q name’.</p>
+
+<p>For further information on commands that can be run, issue the /help command inside zkclient.  The groupchat and send commands are very useful, so definitely look at the help for that (‘/help gc’ and ‘/help send’).</p>
+
+<h2>How can I get involved?</h2>
+
+<p>If you find zkc interesting or useful, we’d appreciate both <a href="https://github.com/companyzero/zkc/issues">filing issues for bugs</a> and pull requests for new code <a href="https://github.com/companyzero/zkc">on GitHub</a>.  We have setup a channel on the freenode IRC server network for anyone interested in discussing zkc, #zkc, which is also accessible via <a href="https://webchat.freenode.net/">freenode’s webchat</a>. We’re also on twitter, <a href="https://twitter.com/_company0">@_company0</a>.</p>
+
+                </div><!-- .entry-content -->
+                <footer class="entry-footer">
+                    <div class="share-post">
+                        <span>Share</span>
+                        <a class="fa-twitter" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text=zkc:%20Secure%20Communications&amp;url=https://blog.decred.org/2016/12/07/zkc-Secure-Communications/"><span class="screen-reader-text">Twitter</span></a>
+                        <a class="fa-facebook" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.decred.org/2016/12/07/zkc-Secure-Communications/&amp;t=zkc:%20Secure%20Communications"><span class="screen-reader-text">Facebook</span></a>
+                        <a class="fa-google-plus" target="_blank" rel="noopener noreferrer" href="http://plus.google.com/share?url=https://blog.decred.org/2016/12/07/zkc-Secure-Communications/"><span class="screen-reader-text">Google+</span></a>
+                    </div><!-- .share-post -->
+                    
+                    <div class="tag-links">
+                        Tags: <a href="/tags/index.html#zkc" title="Pages tagged zkc" rel="tag">zkc</a><a href="/tags/index.html#secure+communications" title="Pages tagged secure communications" rel="tag">secure communications</a><a href="/tags/index.html#instant+messaging" title="Pages tagged instant messaging" rel="tag">instant messaging</a>
+                    </div>
+                    
+                </footer><!-- .entry-footer -->
+            </article><!-- .post -->
+            <div class="author-box">
+                <div class="author-info">
+                    <div class="author-avatar" style="background-image: url(/images/jy-p_300x300.png)"><span class="screen-reader-text">Jake Yocom-Piatt's Picture</span></div>
+                    <div class="author-details">
+                        <h2 class="author-title">About Jake Yocom-Piatt</h2>
+                        <p class="author-bio">Decred project organizer!</p>
+                        <span class="author-location"><i class="fa-map-marker" aria-hidden="true"></i> Chicago, US</span>
+                        <span class="author-website"><i class="fa-chain" aria-hidden="true"></i> <a href="https://twitter.com/behindtext" target="_blank" rel="noopener noreferrer"> https://twitter.com/behindtext</a></span>
+                    </div><!-- .author-details -->
+                </div><!-- .author-info -->
+            </div><!-- .author-box -->
+            <nav class="post-navigation">
+                <h2 class="screen-reader-text">Post navigation</h2>
+                
+                <div class="nav-previous">
+                    <div class="nav-inside">
+                        
+                        <a href="/2016/11/16/Upgrading-Consensus/" class="nav-thumb" style="background-image: url(/images/posts/pdp-1.jpg)"></a>
+                        
+                        <div class="nav-before">Previous</div>
+                        <div class="nav-title"><a href="/2016/11/16/Upgrading-Consensus/">Upgrading Consensus</a></div>
+                        <div class="nav-date">November 16, 2016</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-previous -->
+                
+                
+                <div class="nav-next">
+                    <div class="nav-inside">
+                        
+                        <a href="/2017/01/09/2017-Decred-Roadmap/" class="nav-thumb" style="background-image: url(/images/posts/hoover_dam.jpg)"></a>
+                        
+                        <div class="nav-before">Next</div>
+                        <div class="nav-title"><a href="/2017/01/09/2017-Decred-Roadmap/">2017 Decred Roadmap</a></div>
+                        <div class="nav-date">January 9, 2017</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-next -->
+                
+            </nav><!-- .post-navigation -->
+            
+        </main><!-- .site-main -->
+        <aside class="sidebar">
+
+    
+    <section class="widget widget-text">
+        <h2 class="widget-title">About Jake Yocom-Piatt</h2>
+        <p>Decred project organizer!</p>
+    </section><!-- .widget-text -->
+    
+
+    
+
+    <section class="widget widget-recent-posts">
+        <h2 class="widget-title">Latest Posts</h2>
+        <ul class="recent-posts">
+            
+            <li class="recent-item"><a href="/2019/08/28/Iterating-Privacy/">Iterating Privacy</a> <span>August 28, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2019/08/21/Surveying-the-Privacy-Landscape/">Surveying the Privacy Landscape</a> <span>August 21, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2018/10/15/Politeia-in-Production/">Politeia in Production</a> <span>October 15, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/06/05/A-New-Kind-of-DEX/">A New Kind of DEX</a> <span>June 5, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/02/28/2018-Decred-Roadmap/">2018 Decred Roadmap</a> <span>February 28, 2018</span></li>
+            
+        </ul><!-- .recent-posts -->
+    </section><!-- .widget-recent-posts -->
+
+    <!--Create a sorted array of tags-->
+    
+    
+    <section class="widget widget-tags">
+        <h2 class="widget-title">Tags</h2>
+        <div class="tagcloud">
+            
+            <a href="/tags/#Bitcoin">Bitcoin</a>
+            
+            <a href="/tags/#CoinShuffle%2B%2B">CoinShuffle++</a>
+            
+            <a href="/tags/#Confidential+Transactions">Confidential Transactions</a>
+            
+            <a href="/tags/#DAE">DAE</a>
+            
+            <a href="/tags/#DAO">DAO</a>
+            
+            <a href="/tags/#DEX">DEX</a>
+            
+            <a href="/tags/#Decred">Decred</a>
+            
+            <a href="/tags/#DiceMix">DiceMix</a>
+            
+            <a href="/tags/#LN">LN</a>
+            
+            <a href="/tags/#Lightning+Network">Lightning Network</a>
+            
+            <a href="/tags/#Litecoin">Litecoin</a>
+            
+            <a href="/tags/#OTC">OTC</a>
+            
+            <a href="/tags/#Politeia">Politeia</a>
+            
+            <a href="/tags/#Proof-of-Stake">Proof-of-Stake</a>
+            
+            <a href="/tags/#Proposal+System">Proposal System</a>
+            
+            <a href="/tags/#RFP">RFP</a>
+            
+            <a href="/tags/#SPV">SPV</a>
+            
+            <a href="/tags/#Stake+Difficulty">Stake Difficulty</a>
+            
+            <a href="/tags/#Ticket+Price">Ticket Price</a>
+            
+            <a href="/tags/#Treasury">Treasury</a>
+            
+            <a href="/tags/#atomic+swap">atomic swap</a>
+            
+            <a href="/tags/#best-practices">best-practices</a>
+            
+            <a href="/tags/#blockchain+anchor">blockchain anchor</a>
+            
+            <a href="/tags/#challenge">challenge</a>
+            
+            <a href="/tags/#consensus">consensus</a>
+            
+            <a href="/tags/#contractors">contractors</a>
+            
+            <a href="/tags/#cryptocurrency">cryptocurrency</a>
+            
+            <a href="/tags/#database">database</a>
+            
+            <a href="/tags/#dcrd">dcrd</a>
+            
+            <a href="/tags/#dcrtime">dcrtime</a>
+            
+            <a href="/tags/#dcrwallet">dcrwallet</a>
+            
+            <a href="/tags/#decentralized+exchange">decentralized exchange</a>
+            
+            <a href="/tags/#decentralized+regulation">decentralized regulation</a>
+            
+            <a href="/tags/#developers">developers</a>
+            
+            <a href="/tags/#exchange">exchange</a>
+            
+            <a href="/tags/#gominer">gominer</a>
+            
+            <a href="/tags/#governance">governance</a>
+            
+            <a href="/tags/#hard+fork">hard fork</a>
+            
+            <a href="/tags/#hard+fork+voting">hard fork voting</a>
+            
+            <a href="/tags/#instant+messaging">instant messaging</a>
+            
+            <a href="/tags/#integration">integration</a>
+            
+            <a href="/tags/#lnd">lnd</a>
+            
+            <a href="/tags/#meltdown">meltdown</a>
+            
+            <a href="/tags/#payment">payment</a>
+            
+            <a href="/tags/#paymetheus">paymetheus</a>
+            
+            <a href="/tags/#post-quantum">post-quantum</a>
+            
+            <a href="/tags/#privacy">privacy</a>
+            
+            <a href="/tags/#proposal+system">proposal system</a>
+            
+            <a href="/tags/#researchers">researchers</a>
+            
+            <a href="/tags/#roadmap">roadmap</a>
+            
+            <a href="/tags/#secure+communications">secure communications</a>
+            
+            <a href="/tags/#security">security</a>
+            
+            <a href="/tags/#smart+contracts">smart contracts</a>
+            
+            <a href="/tags/#soft+fork">soft fork</a>
+            
+            <a href="/tags/#spectre">spectre</a>
+            
+            <a href="/tags/#support">support</a>
+            
+            <a href="/tags/#timestamped+filesystem">timestamped filesystem</a>
+            
+            <a href="/tags/#verifiable+volume">verifiable volume</a>
+            
+            <a href="/tags/#zkc">zkc</a>
+            
+        </div><!-- .tagcloud -->
+    </section><!-- .widget -->
+
+</aside><!-- .sidebar -->
+
+    </div><!-- .inner -->
+</div><!-- .site-content -->
+
+    <footer class="site-footer">
+    <div class="inner">
+        <div class="social-links">
+            
+            <a href="https://twitter.com/decredproject" class="fa-twitter square fill-horizontal"><span class="screen-reader-text">Twitter</span></a>
+            
+            
+            
+            
+            <a href="https://github.com/decred" class="fa-github-alt square fill-horizontal"><span class="screen-reader-text">GitHub</span></a>
+            
+            
+            
+            
+            
+            
+            
+            <a class="fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">RSS</span></a>
+        </div><!-- .social-links -->
+        <div class="site-info">
+            &copy; <a href="/">Decred Blog</a> all rights reserved. <br />
+            <a href="#top" id="top-link" class="fa-chevron-up top-link square fill-horizontal"><span class="screen-reader-text">Back to the top</span></a>
+        </div><!-- .site-info -->
+    </div><!-- .inner -->
+</footer><!-- .site-footer -->
+
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/plugins.js"></script>
+    <script type="text/javascript" src="/js/custom.js"></script>
+</body>
+</html>

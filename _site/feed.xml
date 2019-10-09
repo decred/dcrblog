@@ -1,0 +1,1045 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Decred Blog</title>
+        <description>Decred is an open and progressive cryptocurrency with a system of community-based governance integrated into its blockchain.</description>
+        <link>https://blog.decred.org/</link>
+        <atom:link href="https://blog.decred.org/feed.xml" rel="self" type="application/rss+xml"/>
+        <pubDate>Wed, 28 Aug 2019 11:04:39 -0400</pubDate>
+        <lastBuildDate>Wed, 28 Aug 2019 11:04:39 -0400</lastBuildDate>
+        <generator>Jekyll v4.0.0</generator>
+        
+            <item>
+                <title>Iterating Privacy</title>
+                <description>&lt;p&gt;Decred’s privacy features and plans are ready to be revealed.  The goal of our privacy features is to be simple, adaptable, and creative.&lt;/p&gt;
+
+&lt;p&gt;Rather than take the routes established by privacy-focused projects, e.g. ring signatures, zk-SNARKs, or Mimblewimble, we decided to take a mixnet approach, where we have integrated the mixnet with our Proof-of-Stake (“PoS”) governance system.  Currently, just over 50% of all decred in circulation participate in PoS, which requires a steady flow of ticket purchases. This existing transaction flow, unique to Decred, functions as the natural basis for a mixnet.  Per the approach with Decred’s PoS governance system, this yields a “many birds, one stone” scenario: stakeholders gain anonymity and they simultaneously create a substantial background volume against which they and non-stakeholders can mix regular transactions.  Here is a high level summary of Decred’s mixnet:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;It is based on the CoinShuffle++ protocol from &lt;a href=&quot;https://eprint.iacr.org/2016/824.pdf&quot;&gt;“P2P Mixing and Unlinkable Bitcoin Transactions”&lt;/a&gt; by Ruffing, Moreno-Sanchez and Kate.&lt;/li&gt;
+  &lt;li&gt;The mixing process is integrated with the ticket buying process, so stakeholders running ticket buying wallets can purchase tickets anonymously.&lt;/li&gt;
+  &lt;li&gt;In addition to having a denomination based on the current ticket price, smaller fixed denominations are used for mixing change and regular transactions.&lt;/li&gt;
+  &lt;li&gt;Change from the mixing process requires special handling to avoid linking unspent transaction outputs (“UTXOs”).&lt;/li&gt;
+  &lt;li&gt;There is an approximately 12x increase in on-chain transaction storage when using privacy.&lt;/li&gt;
+  &lt;li&gt;The initial release is command line interface (“CLI”) only and will only support solo stakers and non-stake transactions.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In the rest of this article, I will cover the motivation behind the decisions that were made to arrive at this system, how the system works in more detail, and what the next steps are after this initial release.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h2&gt;Motivation&lt;/h2&gt;
+
+&lt;p&gt;The privacy work has been kept under wraps since mid 2017, and this deserves some explanation.  At the time, I had made the observation that both Monero and Zcash, while providing substantial privacy, had what I perceived as a serious problem: they cannot drop historical transactions from their full nodes, i.e. prune, because it is not possible to know if a transaction output (“TXO”) is spent or not.  Although it is clear that both projects felt this was not a serious problem, my thought was that this is going to be a massive problem for sustainability in the longer term. A blockchain will struggle to function as a long-term store of value if it is too bloated to be downloaded and easily replicated, reducing its security.  It appeared that most other people in the cryptocurrency space did not share this opinion, so I felt it best to withhold my criticism, rather than make it public and cue someone else to implement a solution.&lt;/p&gt;
+
+&lt;p&gt;Beyond this concern that breaking pruning was a bad long-term engineering decision that could negatively affect sustainability, despite being good for near-term privacy, I was concerned about the complexity of both approaches.  Ring signatures carry a moderate complexity and zk-SNARKs have a high complexity, so that cued me to find a simpler approach that did not break pruning.  Initially, I had planned to implement TumbleBit from the paper &lt;a href=&quot;https://eprint.iacr.org/2016/575.pdf&quot;&gt;“TumbleBit: An Untrusted Bitcoin-Compatible Anonymous Payment Hub”&lt;/a&gt; by Heilman, AlShenibr, Baldimtsi, Scafuro and Goldberg.  Between the winter of 2017 and spring of 2018, I had Mikhail Belopuhov, a developer with substantial experience working on cryptographic engineering projects, implement TumbleBit in Go.  Once his initial implementation was complete and it was time to integrate the code, I became more aware of the shortcomings of TumbleBit, namely that the mixing server is vulnerable to Denial-of-Service (“DoS”) attacks, and that the countermeasure against this (anonymous fee vouchers) meant more code and more complexity had to be added.  Despite not integrating the TumbleBit code into Decred, we are &lt;a href=&quot;https://github.com/decred/tumblebit&quot;&gt;releasing this code&lt;/a&gt; for public benefit.&lt;/p&gt;
+
+&lt;p&gt;It was at this point that I thought it best to have a close look at the CoinShuffle++ protocol from &lt;a href=&quot;https://eprint.iacr.org/2016/824.pdf&quot;&gt;“P2P Mixing and Unlinkable Bitcoin Transactions”&lt;/a&gt; by Ruffing, Moreno-Sanchez and Kate, which I found to be substantially less complex than TumbleBit.  CoinShuffle++ is based on common cryptographic primitives, e.g. key exchanges, session keys, hash functions, signatures, and finite field arithmetic.  After having a close look at CoinShuffle++, it was clear it was simpler and more DoS-resistant than TumbleBit, so we pivoted and pursued CoinShuffle++. Simple code and simple primitives mean fewer things to break or go wrong. Due to constraints on engineering resources, this work did not start until December 2018, and it is now ready to be published after several months of work.&lt;/p&gt;
+
+&lt;p&gt;CoinShuffle++ addresses only the traceability component of privacy, without addressing the issue of transaction amounts.  Since CoinShuffle++ did not require any consensus changes, this work was able to be completed in private. The same cannot be said for techniques to obfuscate transaction amounts.  In order to obfuscate transaction amounts, consensus changes must occur, and those must occur as part of a public process with Decred, per the will of the stakeholders.&lt;/p&gt;
+
+&lt;p&gt;Decred is built on the tenets of blockchain security, built-in governance, and a self-funding block reward that makes it a superior store of value. With these foundations in place, we are keen to build out privacy features that will enhance security for our users.  Despite a public process being required to obfuscate transaction amounts, I am of the opinion that the issue of traceability is far more important when it comes to the security of our stakeholders, who will experience a substantial privacy gain as a result.&lt;/p&gt;
+
+&lt;h2&gt;How It Works&lt;/h2&gt;
+
+&lt;p&gt;Decred has &lt;a href=&quot;https://github.com/decred/cspp&quot;&gt;implemented a variant of CoinShuffle++&lt;/a&gt; in its wallet.  Although it is possible to perform this process in an entirely peer-to-peer (“P2P”) fashion, that overlooks constraints that come from routing over the public internet, so we have created both a server, csppserver, and integrated the client into dcrwallet.  In order to give a deeper understanding of how CoinShuffle++ works, we will work through a simple example that illustrates the concept behind the process.  In addition to what is described in the paper, there is robust denomination and change handling built into wallet, and it is setup to handle both regular transactions and ticket purchasing.  There are a couple notable limitations for this initial release since it is CLI only, requires a solo staking or non-staking configuration, and mixes can be undone by an attacker that can break the discrete logarithm problem (“DLP”).  It is expected that roughly 12.5% of all decred in circulation will make use of privacy within a few months.  Configuring dcrwallet to use privacy requires some configuration file editing.&lt;/p&gt;
+
+&lt;h3&gt;CoinShuffle++&lt;/h3&gt;
+
+&lt;p&gt;CoinShuffle++ is a non-custodial process for creating CoinJoin transactions, where the output addresses are anonymized via a mixnet.  The process whereby the output addresses are anonymized is called &lt;a href=&quot;https://github.com/ElementsProject/dicemix/blob/master/doc/protocol.md&quot;&gt;DiceMix Light&lt;/a&gt;, which is an iteration by Ruffing of the DiceMix process originally proposed in the CoinShuffle++ paper.  Note that the CoinJoin that occurs leaks which inputs and change addresses belong to which peer to the server, but not the other peers participating in the mix.  The output addresses are fully anonymized, such that none of the peers or the server can tell which output belongs to which peer.  Mixes occur episodically in epochs, with the initial mainnet epoch set to 20 minutes (1200 seconds).&lt;/p&gt;
+
+&lt;h3&gt;Architecture&lt;/h3&gt;
+
+&lt;p&gt;The client-server architecture we chose is a common approach to network infrastructure, mainly because network address translation means you may not be able to directly reach other peers with whom you are mixing.  This problem is very common and comes down to a question of port forwarding or whether UDP hole punching is an acceptable approach, which we believe adds too much complexity.  Additionally, using direct P2P would mean every peer seeing every other peer’s public IP, which isn’t great for privacy.  The server, csppserver, requires JSON-RPC access to dcrd, Decred’s consensus daemon, to verify TXOs are indeed unspent.&lt;/p&gt;
+
+&lt;p&gt;The initial csppserver will be hosted at cspp.decred.org, but it is possible to run your own server.  Running your own server will have limited utility because the goal is to get as many peers as possible in each mix, so we recommend not doing it.  There are plans to make the server high-availability in the future.&lt;/p&gt;
+
+&lt;h3&gt;Simplified DiceMix Example&lt;/h3&gt;
+
+&lt;p&gt;In order to understand how the DiceMix protocol works, it is instructive to work through a simplified algorithm, called “Secure Sum”.  This example uses 3 peers, but it is straightforward to extend this process to an arbitrary number of peers.&lt;/p&gt;
+
+&lt;p&gt;Assume Alice, Bob, and Carol each have a number and they want to compute the sum of all those numbers, but each of them wants to avoid any peer knowing what the other peers’ numbers are.  Alice partitions her number as A1+A2+A3, Bob partitions his number as B1+B2+B3, and Carol partitions her number as C1+C2+C3.  Alice then sends A2 to Bob and A3 to Carol, Bob sends B1 to Alice and B3 to Carol, and Carol sends C1 to Alice and C2 to Bob.  Alice calculates A1+B1+C1, Bob calculates A2+B2+C2, Carol calculates A3+B3+C3, then they all broadcast their respective partial sums to the other peers.  Each of them can now calculate the sum of all the numbers by adding the partial sums, and no peer knows what each other peer’s number was, assuming there is no collusion.&lt;/p&gt;
+
+&lt;p&gt;The trick being used in the above example is that the sum of the horizontal sums equals the sum of the vertical sums, which is apparent if you write the partitions out:&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dcr-secure-sum-example.png&quot; alt=&quot;Secure Sum Example&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;p&gt;With DiceMix, additional complexity is added, but the core concept remains the same.  DiceMix involves each peer creating a vector of the exponents of its payout address, adding padding terms to each vector component that are based on the pairwise session keys from the key exchange process, summing these vectors from each peer to create a system of equations, and then solving the system of equations for the payout addresses.  The trick here is that the padding terms are chosen such that they cancel as they are summed across all peers’ vectors.  Once we have an anonymized list of payout addresses, a standard CoinJoin process occurs with the peers.&lt;/p&gt;
+
+&lt;h3&gt;Denominations and Change Handling&lt;/h3&gt;
+
+&lt;p&gt;DiceMix anonymizes the output addresses for a CoinJoin transaction, but it does not make the outputs indistinguishable.  To make the outputs indistinguishable, they must have a fixed denomination for each mix.  The need for fixed output denominations was noted in the &lt;a href=&quot;https://cryptonote.org/whitepaper_v1.pdf&quot;&gt;CryptoNote whitepaper&lt;/a&gt; in 2012, so the need for identical output amounts to preserve privacy is well-known.  The denominations used for Decred are the current ticket price (plus a fee) and several fixed denominations below the ticket price.  The ticket price changes every 144 blocks, roughly every 12 hours, so this denomination changes over time.  If the ticket price changes during an epoch, the mix is cancelled and peers subscribe to the next mix.&lt;/p&gt;
+
+&lt;p&gt;As is typical in the world of cryptography and privacy “the devil is in the details”, and the change from CoinShuffle++ mixes is no exception to this rule.  CoinShuffle++ does a fine job of anonymizing the output addresses, but if the change is not handled with care, it can link mixed and unmixed UTXOs.  In many cases, change outputs can be linked to their inputs by doing a partial sum analysis, e.g. a subset of inputs sum to 12.34, an anonymous output of 10, fee of 0.001, and change of 2.339.  This means that if the change of 2.339 is included as an input with anonymized outputs, it creates a link between the inputs that sum to 12.34 and those anonymized outputs, reducing or entirely removing the privacy we have worked to create.  To deal with this threat, change from mixes flows to a separate wallet account, where it is then mixed into smaller denominations until the change is less than the smallest mixer denomination.&lt;/p&gt;
+
+&lt;p&gt;The fixed denominations were chosen to balance the average on-chain transaction storage size, mix quality, and ease of performing multiplications.  If we assume the denominations use base N and there are M denominations, in a worst case, there will be N-1 outputs from a given denomination, and M x (N - 1) total outputs from a single change input.  For base 10, this means that a change amount of 99.999 would require up to 5 x (10 - 1) = 45 mixed outputs, so you can expect a roughly 22x increase in on-chain transaction storage.  We have chosen to work in base 4, with 8 denominations below the ticket size, so a worst case change would require 8 x (4 - 1) = 24 outputs, creating a roughly 12x increase in on-chain storage.  An extra 2 denominations above the ticket price have been included, but we expect them to receive limited usage.  The smallest denomination is 4^9 atoms = 0.00262144 and the one below the current ticket size is 4^16 atoms = 42.94967296.&lt;/p&gt;
+
+&lt;h3&gt;Limitations&lt;/h3&gt;
+
+&lt;p&gt;This initial code only supports the CLI wallet, dcrwallet, and solo stakers, i.e. does not work with voting service providers (“VSPs”), and regular transactions.  We are obviously keen to extend support for privacy to GUI wallets, e.g. Decrediton, and have it work with VSPs.  The challenge with GUI wallets is one of user experience (“UX”) since the process of mixing either freshly received payments or change requires the wallet to be unlocked for longer periods of time, e.g. 10s of minutes.  VSPs create a more substantial challenge because users have a notion of identity when they register an account at a VSP, and each account has a fixed 1-of-2 multisignature script.  In the event an attacker can break DLP and has passively recorded all the communications between the mix clients and the server, they can reveal the linking between the inputs, outputs and change.  Note that there is no risk of such an attacker causing silent inflation.&lt;/p&gt;
+
+&lt;h3&gt;Expectations&lt;/h3&gt;
+
+&lt;p&gt;An important aspect of any privacy feature is what users can expect to gain from it, particularly in the context of opt-in privacy.  At the current ticket price of roughly DCR 128, steady state ticket buying requires our stakeholders to spend DCR 128 x 5 tickets per block x 288 blocks per day = DCR 184,320 per day.  There are currently approximately DCR 10,282,000 in circulation, so this steady state buying represents roughly 1.8% of the total issuance being used to buy tickets each day.    Roughly 50% of all tickets are solo staked, estimate that 50% of the solo stake will make use of privacy, and roughly 50% of all decred is staked, so that means an estimate of 12.5% of all decred will use privacy via this initial privacy release.  It will likely take a few months for the participation to reach this level because tickets get called to vote slowly over time and only new tickets can opt-in to use privacy.&lt;/p&gt;
+
+&lt;p&gt;Both stakeholders and non-stakeholders can use the privacy system and be confident of a steady flow of transactions to mix with because we have integrated these transactions with the steady flow of ticket buying from our governance system.  With the system described above, users who opt-in to privacy will be able to both receive and spend payments with healthy plausible deniability, and the situation will only improve as we improve the UX and increase the participation level.  External passive observers will be able to see collections of mixed UTXOs be spent, but they will not able to link those transactions to an identity.&lt;/p&gt;
+
+&lt;h3&gt;Configuration&lt;/h3&gt;
+
+&lt;p&gt;With all this talk about how privacy works, some readers are surely keen to get it configured and working.  Several new options must be set in dcrwallet.conf:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;csppserver=cspp.decred.org:15760 - This is the FQDN and port csppserver is listening on.&lt;/li&gt;
+  &lt;li&gt;csppserver.ca=cspp.decred.org.pem - This is the CA certificate for the csppserver.&lt;/li&gt;
+  &lt;li&gt;purchaseaccount=mixed - This sets the account from which you will buy tickets.&lt;/li&gt;
+  &lt;li&gt;mixaccount=mixed/1 - As mixes occur, mixed output addresses will come from the internal branch this account.&lt;/li&gt;
+  &lt;li&gt;changeaccount=unmixed - Each set of mix inputs uses a change address from this account.&lt;/li&gt;
+  &lt;li&gt;mixchange=1 - This tells dcrwallet to mix payments to changeaccount into the mixedaccount.&lt;/li&gt;
+  &lt;li&gt;ticketbuyer.votingaccount=voting - This tells the wallet which account to use when setting voting ticket voting addresses.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In addition to setting these new options in dcrwallet.conf, two new accounts must be created: mixed and unmixed.  The voting account can either be created locally, if your ticketbuyer wallet also votes,  or you can import an extended pubkey for a voting account from an external voting wallet.&lt;/p&gt;
+
+&lt;p&gt;Stakeholders running a ticketbuyer will want to &lt;a href=&quot;https://cspp.decred.org/&quot;&gt;setup a 2nd ticketbuyer that will run in parallel&lt;/a&gt;, where the configurations are such that newly bought tickets in the 1st wallet have the 2nd wallet’s mixed account branch 0 set as their mixedaccount.  It may take large stakeholders up to the full ticket expiration of roughly 4.7 months to completely migrate to the new mixed wallet. Non-stakeholders can set these options, leaving out purchaseaccount, and participate in the mixing without buying tickets.  To receive payments, generate new addresses from the unmixed account, then those payments will be mixed into the mixed account.&lt;/p&gt;
+
+&lt;p&gt;Note that the mixing process requires the wallet being unlocked for longer periods of time, so that it can participate in a mix, which occurs every 20 minutes.  Ticketbuyer wallets run unlocked already, but non-staking wallets will need to be left unlocked long enough to complete their mixes.&lt;/p&gt;
+
+&lt;h2&gt;Future Work&lt;/h2&gt;
+
+&lt;p&gt;There is quite a bit of further work to be done to improve privacy, both in terms of improving upon and adding to the initial privacy release.  The UX for GUI wallets, e.g. Decrediton, requires integration work both in the GUI components and dcrwallet.  Retooling VSPs to be compatible with privacy requires going from an account-based system to a direct ticket-based system, and this requires modification of both dcrstakepool and dcrwallet.  This initial release relies on a single server process, but we can replace this single server with either a cluster or a mixing mempool in dcrd.  After seeing the complexity that arises from change handling, the addition of confidential transaction (“CT”) support would be a natural next step, which would require a consensus change.  Since the mixing process does not occur on-chain, it is possible to modify DiceMix to support post-quantum (“PQ”) cryptography, which would make mixing secure against an attacker that can break DLP.&lt;/p&gt;
+
+&lt;h3&gt;GUI Wallet Integration&lt;/h3&gt;
+
+&lt;p&gt;As mentioned above, there are some changes that must be made to dcrwallet so that the UX of mixing with Decrediton would be acceptable.  The problem here is that an epoch on the order of 20 minutes requires a mixing wallet to be ready to sign the CoinJoin transaction for at least that amount of time.  The simple option here is to leave the entire wallet unlocked for an extended period, but this is a bad security practice.  With some work, it is possible to make dcrwallet unlock only a single account at a time, e.g. the unmixed account, and make all RPCs to the wallet that involves signing explicitly require the passphrase.  Once these changes are made, integrating support for privacy into Decrediton should be straightforward.&lt;/p&gt;
+
+&lt;h3&gt;VSP Changes&lt;/h3&gt;
+
+&lt;p&gt;VSPs currently operate on a per-account basis, e.g. you have a login, a fixed 1-of-2 multisignature address for that account, and a single set of voting preferences, but to support privacy properly, VSPs must operate on a per-ticket basis.  This requires users to submit an individual private key per ticket to the VSP, VSP fees to be paid via direct payment, and ticket preferences set on a per-ticket basis.  Additionally, it would be ideal if tickets were delegated to VSPs via Tor or similar.  This requires changes to both dcrwallet and dcrstakepool. Since roughly 50% of the tickets are held by VSPs, this should translate to an approximate doubling of usage of privacy, from 12.5% to 25% of the decred in circulation.&lt;/p&gt;
+
+&lt;h3&gt;Mixer Server Clustering&lt;/h3&gt;
+
+&lt;p&gt;It is simple to operate a single mixing server, but it is not a particularly resilient configuration, even though it is sufficient to handle a substantial transaction volume.  A more resilient longer-term configuration would be a high availability cluster, or even integration of the server into dcrd, creating a mixing mempool.  There may be reasons to not integrate this into dcrd, so further investigation is required here.&lt;/p&gt;
+
+&lt;h3&gt;Confidential Transactions&lt;/h3&gt;
+
+&lt;p&gt;The complexity and on-chain transaction storage increase required to properly handle change with CoinShuffle++ is good motivation to consider adding obfuscation of transaction amounts.  Obfuscating amounts causes the entire partial sum analysis and corresponding denomination-based mixing to become obsolete. This leads to a single mixing transaction per epoch, rather than several separate mixing transactions of various denominations.  Conveniently, there is a paper &lt;a href=&quot;https://fc17.ifca.ai/bitcoin/papers/bitcoin17-final6.pdf&quot;&gt;“Mixing Confidential Transactions: Comprehensive Transaction Privacy for Bitcoin”&lt;/a&gt; by Ruffing and Moreno-Sanchez, which covers exactly this improvement.  If Bulletproofs (“BPs”) are used, the size of transactions using CT is such that it is likely this will reduce on-chain transaction storage requirements.&lt;/p&gt;
+
+&lt;p&gt;A valid concern about CT is that an attacker that can break DLP can create silent inflation, which would be disastrous for Decred’s PoS governance system and its ability to server as a store of value.  While there are valid arguments based on public information that a functioning large-scale quantum computer is still many years away, there is a massive incentive for larger nation state governments to develop such technology in secret and use it to decrypt a wide variety of encrypted data.  The &lt;a href=&quot;https://web.stanford.edu/~buenz/pubs/bulletproofs.pdf&quot;&gt;BPs authors suggest in section 4.9&lt;/a&gt; it is possible to implement BPs that are computationally hiding and perfectly binding, rather than the simpler perfectly hiding and computationally binding BPs.  We will be investigating this option because the failure mode of silent inflation would seriously damage Decred.&lt;/p&gt;
+
+&lt;h3&gt;Post-Quantum Cryptography&lt;/h3&gt;
+
+&lt;p&gt;One of the major benefits of CoinShuffle++ and its associated DiceMix protocol is that it can be modified to support PQ cryptography, making the mixing process secure against attackers that can break DLP.  DiceMix requires the participating peers to perform a pairwise key exchange, which they suggest be done as non-interactive key exchange for simplicity purposes because an interactive key exchange would create additional rounds of communication.  By adding an additional round of communication, it is possible to use PQ cryptography to secure the key exchange process.  Company 0 has &lt;a href=&quot;https://github.com/companyzero/sntrup4591761&quot;&gt;an existing implementation&lt;/a&gt; of one of the better PQ cryptosystems, Streamlined NTRU Prime 4591^761, based on &lt;a href=&quot;https://ntruprime.cr.yp.to/ntruprime-20170816.pdf&quot;&gt;the work of Bernstein, Chuengsatiansup, Lange and van Vredendaal&lt;/a&gt;, so this would be a natural choice for such an application.  Since the mixing process occurs off-chain, the typical transaction size considerations for using PQ cryptography are not relevant, e.g. that PQ public keys are often 1 KB or larger.  Note that this would not prevent an attacker that can break DLP from stealing funds where the corresponding public key has been revealed, but it would prevent them from passively undoing mixes to strip privacy.&lt;/p&gt;
+
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;It is refreshing to make this work public and deliver an initial release of privacy to our stakeholders in a way that can benefit all Decred users.  These features are available as a dcrwallet pull request on GitHub, and we encourage the more technical users to test this code with us.  This code has received substantial testing on testnet throughout its development, so it should be quite stable already.  After some additional testing, this code will become part of the master branch and be included in the next release, 1.5.0.  We are always looking for talented developers, so if this privacy work interests you, hop in our &lt;a href=&quot;https://chat.decred.org&quot;&gt;chat&lt;/a&gt; and let us know.&lt;/p&gt;
+
+&lt;p&gt;While the work already completed is substantive, there is still much to do.  We have aimed to keep the privacy code simple, both in terms of cryptographic primitives and its implicit constraints on the Decred blockchain.  Decred will continue to iterate and adapt to the changing privacy landscape around us, integrating new features as necessary, per the will of the stakeholders, to deal with threats as they arise.  As always, we strive to maximize the security of our blockchain and its users, and we will do it sustainably, to make Decred a superior long-term store of value.&lt;/p&gt;
+
+&lt;p&gt;In keeping with the previous privacy article, we have now added Decred to the chart below.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dcr-cc-privacy-comparison-2.png&quot; alt=&quot;Privacy Comparison Chart&quot; /&gt;
+    
+&lt;/figure&gt;
+
+</description>
+                <pubDate>Wed, 28 Aug 2019 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2019/08/28/Iterating-Privacy/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2019/08/28/Iterating-Privacy/</guid>
+                
+                <category>Decred</category>
+                
+                <category>privacy</category>
+                
+                <category>post-quantum</category>
+                
+                <category>CoinShuffle++</category>
+                
+                <category>DiceMix</category>
+                
+                <category>Confidential Transactions</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>Surveying the Privacy Landscape</title>
+                <description>&lt;p&gt;In this article I will discuss my views on the existing privacy technology in use in the cryptocurrency space. Since several projects have a primary focus on privacy, I will explain the various privacy technologies, which will help in understanding the route Decred has taken and I will advocate we take. A second article will follow that goes into more detail on how Decred plans to approach privacy. The projects I will cover here are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Monero&lt;/li&gt;
+  &lt;li&gt;Zcash&lt;/li&gt;
+  &lt;li&gt;Grin/Beam&lt;/li&gt;
+  &lt;li&gt;Bitcoin&lt;/li&gt;
+  &lt;li&gt;Dash&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that I will only be discussing the on-chain privacy technologies used in each of these cases, not the entire project.  At the end of the article, I have assembled a table comparing the various projects and technologies they use.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h2&gt;Motivation&lt;/h2&gt;
+
+&lt;p&gt;Decred has primarily focused on governance since its launch in February 2016, but after making substantial progress on the governance front, the time has come to begin adding privacy features.  While privacy is certainly a separate subdomain from governance within the space, privacy connects very directly to the core tenets of Decred: Security, Adaptability, and Sustainability.&lt;/p&gt;
+
+&lt;p&gt;By giving our users added privacy, we enhance their and the project’s financial security.  Additional privacy features can be added with the consent of our stakeholders in an incremental fashion, allowing Decred to adapt to a changing technological landscape as necessary.  Giving our users privacy also makes the project substantially more resilient against malicious actors, magnifying its sustainability in the longer term.&lt;/p&gt;
+
+&lt;h2&gt;Context&lt;/h2&gt;
+
+&lt;p&gt;All existing cryptocurrency privacy technology can be distilled down to “math tricks”.  Less reductively, several subdomains of mathematics exist that are dedicated to understanding how to efficiently prove certain statements whilst obfuscating much of the data used to prove that statement.  Several techniques from these subdomains have been carefully applied to blockchain technology to create the systems in production today.  I will be discussing these techniques, their applications, their constraints, and their failure modes.&lt;/p&gt;
+
+&lt;h2&gt;Monero&lt;/h2&gt;
+
+&lt;p&gt;Monero’s privacy makes use of a combination of technologies, ring signatures and confidential transactions, which they refer to as &lt;a href=&quot;https://getmonero.org/resources/research-lab/pubs/MRL-0005.pdf&quot;&gt;RingCT&lt;/a&gt;.  The combination of these techniques creates strong privacy guarantees, with some caveats.  RingCT is required for all transactions on the Monero network.&lt;/p&gt;
+
+&lt;h3&gt;Ring Signatures&lt;/h3&gt;
+
+&lt;p&gt;Ring signatures were the basis of the &lt;a href=&quot;https://cryptonote.org/whitepaper_v1.pdf&quot;&gt;CryptoNote protocol&lt;/a&gt; that spawned Bytecoin and Monero.  The main utility of ring signatures is that they prevent passive adversaries from tracing the origin of transactions by creating plausible deniability about the unspent transaction outputs (“UTXOs”) used to fund the transaction, e.g. a typical transaction will show 11 sets of input UTXOs, but only one of those sets contains the real input UTXOs.  Ring signatures allow an external observer to verify the signatures are from one of the sets of UTXOs, but not which set.  Currently, Monero uses a multilayered linkable spontaneous anonymous group (“MLSAG”) signatures, and they will likely be updating this to a new more compact version, called &lt;a href=&quot;https://getmonero.org/resources/research-lab/pubs/MRL-0011.pdf&quot;&gt;“CLSAG”&lt;/a&gt;, in the near future.&lt;/p&gt;
+
+&lt;p&gt;Ring signatures take a very narrow approach towards addressing the tracing of transactions on a blockchain.  By obfuscating which inputs are used in a given transaction and the signature for those inputs, the ability to deterministically link transactions is broken.  Ring signatures do exactly what they need to do and no more.  The mathematics and code involved are of moderate complexity, using straightforward primitives and comprising a few thousand lines of source code.  The size of the signatures scales linearly in the number of inputs for MLSAG signatures and logarithmically for CLSAG.  Ring signatures, along with the rest of elliptic curve cryptography (“ECC”), depend on the discrete logarithm problem (“DLP”) being hard, i.e. unsolvable at the current time, and if DLP is broken, &lt;a href=&quot;https://monero.stackexchange.com/questions/2937/will-quantum-computer-break-ring-signatures&quot;&gt;ring signatures can be undone&lt;/a&gt; to reveal the actual sender.  A notable drawback of ring signatures is that it is not possible to prune the blockchain or otherwise create a snapshot of the UTXO set because it is not possible to determine which transaction outputs are spent and which are not.  This is reflected in &lt;a href=&quot;https://ww.getmonero.org/2019/02/01/pruning.html&quot;&gt;recent work&lt;/a&gt; to have each full node store only 1/8 of all historical transactions.&lt;/p&gt;
+
+&lt;h3&gt;Confidential Transactions&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://people.xiph.org/~greg/confidential_values.txt&quot;&gt;Confidential transactions&lt;/a&gt; (“CT”) were proposed by Greg Maxwell as a method to obfuscate the amounts used in Bitcoin transactions.  This is achieved by using Pedersen commitments, verifying the commitments sum to zero, and including range proofs that each output commitment corresponds to a positive amount.  The range proofs are low-complexity zero knowledge proofs (“ZKP”).  In the context of RingCT, an additional modification must be made to maintain untraceability for the sender, but this modification, which involves commitments summing to a non-zero scalar, is not relevant to understanding the properties of CT.  Monero’s first implementation of CT was based on the original work by Maxwell, but they have recently deployed a significantly more efficient implementation, called &lt;a href=&quot;https://web.stanford.edu/~buenz/pubs/bulletproofs.pdf&quot;&gt;Bulletproofs&lt;/a&gt;, proposed by Bünz et al.  Use of Bulletproofs substantially reduces the size and improves the scaling of the range proofs.&lt;/p&gt;
+
+&lt;p&gt;CT is similar to ring signatures in that it is a narrow approach to addressing obfuscation of transaction amounts.  When Monero was launched, it implemented the CryptoNote protocol, which did not include transaction amount obfuscation, so transactions had amounts with fixed denominations that could be analyzed by passive observers.  CT added the amount obfuscation that Monero was missing, which substantially improved its privacy.  Like ring signatures, the security of CT depends on DLP being hard, which is expected because it depends on ECC.  Unlike ring signatures, &lt;a href=&quot;https://monero.stackexchange.com/questions/11213/what-is-the-impact-of-having-perfectly-hidden-but-only-computationally-bound-com/&quot;&gt;CT cannot be undone by breaking DLP&lt;/a&gt; because Pedersen commitments are a perfectly hiding and computationally binding scheme.  The perfect hiding property means that a set of many points, an amount and a blinding factor in this case, map to the same commitment, so even if you can break DLP, you cannot determine which pair of points mapped to that commitment.  Computationally binding indicates that an attacker who can break DLP can generate amounts and blinding factors that map to a given commitment, but that do not match the input amount and blinding factor.  While perfectly hiding commitments are great for privacy, even in the case an attacker can break DLP, they are also necessarily risky because an attacker who can break DLP can create stealth inflation, due to the commitments being only computationally binding.  The mathematics in the original CT proposal from Maxwell is of moderate complexity, but the more space-efficient Bulletproofs are of moderate-to-high complexity.  The source code to implement Bulletproofs is a few thousand lines long, uses straightforward primitives, and synthesizes those primitives in a novel fashion.&lt;/p&gt;
+
+&lt;h2&gt;Zcash&lt;/h2&gt;
+
+&lt;p&gt;Zcash’s privacy uses ZKPs to obfuscate both the sender and the amount for transactions.  The specific type of ZKP used is a zero-knowledge succinct non-interactive argument of knowledge, called a zk-SNARK.  This system guarantees substantial opacity, and requires users to opt-in to use it.  There are both transparent and shielded transactions in the Zcash network, where shielded transactions are the ones that are protected by zk-SNARKs.  As of Q2 2018, approximately &lt;a href=&quot;https://arxiv.org/pdf/1805.03180.pdf&quot;&gt;3.6% of all ZEC was stored in shielded addresses&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3&gt;zk-SNARKs&lt;/h3&gt;
+
+&lt;p&gt;The use of zk-SNARKs in a cryptocurrency context was proposed in the &lt;a href=&quot;http://zerocash-project.org/media/pdf/zerocash-extended-20140518.pdf&quot;&gt;Zerocash paper&lt;/a&gt; by Ben-Sasson et al in 2014, and that paper was the basis for Zcash.  zk-SNARKs allow for the creation of succinct transactions that have their inputs, amounts and recipients completely obfuscated.  The obfuscation of the transaction data is achieved by constructing arithmetic circuits that can be efficiently verified by 3rd parties without seeing the transaction data, and these circuits are the payloads of shielded transactions.  Fully shielded transactions’ inputs are effectively indistinguishable from each other, meaning that the anonymity set for a particular transaction is the entire shielded segment of the UTXO set.&lt;/p&gt;
+
+&lt;p&gt;zk-SNARKs are an incredibly broad tool which can be brought to bear on a wide variety of problems, e.g. access control, voting systems, and generic record keeping.  While zk-SNARKs are a very powerful tool that can applied in a wide variety of scenarios, they have a substantial cost in terms of complexity.  The mathematics that support zk-SNARKs have a high complexity and require the use of less common primitives.  In order to create a zk-SNARK in Zcash, one must take the transaction information and “compile” it into an arithmetic circuit, which is both computationally intensive and requires a few tens of thousands of lines of code.  Beyond the amount of code being used to create the circuit, this code requires non-trivial amounts of domain knowledge to effectively audit.  A more concrete constraint of zk-SNARKs is that they require a trusted setup phase to generate parameters for the network, and if the trusted setup phase information is compromised by a malicious actor, they can silently forge coins while leaving existing shielded transactions unaffected.  &lt;a href=&quot;https://z.cash/support/faq/&quot;&gt;An attacker that can break DLP&lt;/a&gt; has a similar power to forge coins, but they can only view transaction amounts and memos, not the senders and receivers.  Due to the opacity of shielded transactions, pruning can only work on the transparent segment of the Zcash chain.&lt;/p&gt;
+
+&lt;h2&gt;Grin/Beam&lt;/h2&gt;
+
+&lt;p&gt;Grin and Beam both implement the system proposed in the &lt;a href=&quot;https://github.com/mimblewimble/docs/wiki/MimbleWimble-Origin&quot;&gt;Mimblewimble (“MW”) paper&lt;/a&gt; by Tom Elvis Jedusor in July 2016.  The MW approach to privacy is to restructure blockchain transactions such that they can be aggregated into blocks, obfuscating the senders and receivers within every block, where amounts are obfuscated using CT.  MW privacy applies to all transactions.&lt;/p&gt;
+
+&lt;h3&gt;Transaction aggregation&lt;/h3&gt;
+
+&lt;p&gt;The MW paper proposes restructuring blockchain transactions such that entire transactions can be directly combined.  This ability to aggregate is based on substantially altering the way transactions are signed, then using the fact that signatures can be added together to get a valid signature on the aggregated transaction.  Blocks mined using this system consist of a single large aggregated transaction, with its amounts obfuscated.  Any adversary attempting to historically analyze such a blockchain would only be able to observe the large aggregated transactions that made up each block, which provide plausible deniability regarding senders and receivers.&lt;/p&gt;
+
+&lt;p&gt;Transaction aggregation makes use of a common ECC tool, &lt;a href=&quot;https://bitcoincore.org/en/2017/03/23/schnorr-signature-aggregation/&quot;&gt;signature aggregation&lt;/a&gt;, in a novel way, so it is a broad tool being applied rather narrowly.  The mathematics behind signature aggregation are very straightforward and used extensively with ring signatures and CT.  The signature algorithm and code to aggregate transactions is a few thousand lines or less and uses common primitives.  Despite the utility derived from transaction aggregation, the modifications to the signature algorithm, the inability to use transaction scripts, and changes to the transaction creation process are substantial, so they are unlikely to be integrated into other existing Bitcoin-based blockchains.  Once blocks are mined, the included transactions have been aggregated, but prior to being mined, miners and other nodes on the network can see the individual transactions that have been published before they are aggregated.  An adversary that closely monitors the transactions being published on the network could use that information to link transactions that cannot be linked by looking at mined blocks.  Since MW uses CT directly, an attacker that breaks DLP could silently forge coins, but not undo previous aggregations or reveal amounts.  An additional benefit of using MW is that it is built to prune very easily, substantially reducing the storage footprint of full nodes.&lt;/p&gt;
+
+&lt;h2&gt;Bitcoin&lt;/h2&gt;
+
+&lt;p&gt;Bitcoin does not implement any substantive privacy features in Bitcoin Core beyond being able to manually select input UTXOs, but an alternative Bitcoin wallet, &lt;a href=&quot;https://www.wasabiwallet.io/&quot;&gt;Wasabi Wallet&lt;/a&gt;, does implement privacy features.  Wasabi Wallet makes use of a Chaumian CoinJoin process for privacy.  Privacy with Bitcoin requires users to opt-in.&lt;/p&gt;
+
+&lt;h3&gt;Chaumian CoinJoin&lt;/h3&gt;
+
+&lt;p&gt;Through the application of blind signatures, &lt;a href=&quot;https://github.com/nopara73/ZeroLink#ii-chaumian-coinjoin&quot;&gt;Chaumian CoinJoin&lt;/a&gt; creates plausible deniability regarding the ownership of mixed coins.  The CoinJoin process involves a server merging several transactions into a single transaction, giving some on-chain privacy to the participants, but the server can see where funds originate and where they were sent.  By using blind signatures, it is possible to obfuscate which outputs link to which set of inputs, preventing the server from linking inputs to outputs.  This mixing process occurs episodically, triggered either by a timer or a participation threshold.&lt;/p&gt;
+
+&lt;p&gt;The use of &lt;a href=&quot;https://blog.cryptographyengineering.com/a-note-on-blind-signature-schemes/&quot;&gt;blind signatures&lt;/a&gt; for the CoinJoin process is a narrow application of a straightforward cryptographic technique.  The mathematics behind blind signatures are both low complexity and well-studied, requiring a few hundred lines of code or less to implement.  In order to ensure outputs are indistinguishable, several output denominations are used.  Since amount obfuscation is not supported in Bitcoin, passive analysis can be used to link inputs and outputs via partial sums, which leads to the need to handle change carefully.  The privacy gained from using the blind signature process depends on being able to connect to the server at least 3 times per mix via different network paths, which uses the integrated Tor support in Wasabi Wallet.  While Tor provides a decent amount of network privacy, &lt;a href=&quot;https://security.stackexchange.com/questions/48502/tor-traffic-correlation-attacks-by-global-adversaries&quot;&gt;Tor was not designed to thwart a global passive adversary&lt;/a&gt;, e.g. NSA, so the privacy gain is dependent on who your perceived adversaries are.  An attacker that breaks DLP can impersonate the server, forge signed output addresses, steal input UTXOs, deanonymize mixes from the point they start their attack, and generally force the server to cease operation, but such an attacker cannot deanonymize prior mixes.  Chaumian CoinJoin causes no problems with pruning.&lt;/p&gt;
+
+&lt;h2&gt;Dash&lt;/h2&gt;
+
+&lt;p&gt;Dash implemented a privacy feature in their Dash Core Wallet, called &lt;a href=&quot;https://github.com/dashpay/dash/wiki/Whitepaper&quot;&gt;PrivateSend&lt;/a&gt;, in 2014.  PrivateSend is a distributed CoinJoin process that uses multiple rounds of mixing.  Privacy with Dash is an opt-in process.&lt;/p&gt;
+
+&lt;h3&gt;PrivateSend&lt;/h3&gt;
+
+&lt;p&gt;The CoinJoin process has already been covered in the section about Bitcoin, but a similar process is used in Dash.  The PrivateSend CoinJoin process involves masternodes merging several transactions into a single transaction, giving some on-chain privacy to the participants, but the masternode executing a given CoinJoin can see where funds originated and where they were sent.  Users can specify 4-16 rounds of this mixing, to increase the size of their anonymity set.&lt;/p&gt;
+
+&lt;p&gt;PrivateSend is a less private version of Chaumian CoinJoin, albeit with additional rounds of mixing.  Distributed CoinJoin is a very narrow tool, meant to obfuscate the origin of coins on-chain, but not obfuscate the senders and receivers from the masternodes that perform each CoinJoin.  The algorithm for CoinJoin is straightforward, low complexity, and can be implemented in a few hundred lines of code.  It is difficult to estimate how much anonymity is afforded by the PrivateSend process, as there have been claims made that a few large mix participants for this process could effectively deanonymize the CoinJoins.  In the event that an attacker can break DLP, they can impersonate arbitrary masternodes, potentially deanonymizing CoinJoins from that point forward, but this would leave prior completed CoinJoins unaffected.&lt;/p&gt;
+
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Since it is easy to get lost in the details, a table comparing the privacy features of these projects is shown below. After covering privacy features of several other major cryptocurrency projects, you are now in a good position to understand Decred’s unique approach, which will be outlined in the next article.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dcr-cc-privacy-comparison-1.png&quot; alt=&quot;Privacy Comparison Chart&quot; /&gt;
+    
+&lt;/figure&gt;
+
+</description>
+                <pubDate>Wed, 21 Aug 2019 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2019/08/21/Surveying-the-Privacy-Landscape/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2019/08/21/Surveying-the-Privacy-Landscape/</guid>
+                
+                <category>Decred</category>
+                
+                <category>privacy</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>Politeia in Production</title>
+                <description>&lt;p&gt;Today, Decred’s proposal system, Politeia, goes into production on mainnet.  This corresponds with the development organization ceding control over the accumulated project subsidy, which is roughly DCR 570,000, currently valued at approximately USD 23 million, to the Decred stakeholders.  We have been working towards this milestone for roughly 18 months, so we are very excited to put Politeia into production.  That said, it is important to understand that Politeia is a very powerful tool: it can enable all manner of positive developments for Decred, but if used unwisely, it can lead to a wide variety of problems.  Politeia allows Decred users and stakeholders to propose, discuss, collaborate on, and fund new projects, initiatives, and consensus changes.  If stakeholders exercise bad judgment, it can have serious negative consequences, so I am sharing my experiences and observations as the custodian of the Treasury to date, in an attempt to inform our stakeholders about the potential hazards of this role.  Since the launch of Decred in February 2016, the development organization has been very conservative with spending, having spent a total of USD 2.8 million, roughly DCR 130,000, in that period.  In the remainder of this entry, I will discuss a variety of topics related to managing the Treasury.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h3&gt;Treasury Sovereignty&lt;/h3&gt;
+
+&lt;p&gt;Once Politeia is in production on mainnet, all releases of Treasury funds will require a stakeholder vote.  However, to release the funds, it still requires me to sign transactions as a Manager of the development organization, meaning that this control of funds is “soft” control.  Since release of project treasury funds will still require my approval as a Manager and route through a conventional corporate entity, I will retain the ability to veto releases of funds.  It is my expectation and hope that I will never need to exercise such a veto, and the only circumstances I would even consider exercising a veto would be (1) if I feel that the release of funds would place the entire project in jeopardy or (2) it would place the development organization and/or myself in legal jeopardy.  Once the Treasury is backed by a smart contract, this veto could no longer be exercised and the considerations cited above would be moot.  Development of the Treasury contract will begin shortly, and we will make a draft proposal about it in the next 3 months.&lt;/p&gt;
+
+&lt;h3&gt;Open Source Ethos&lt;/h3&gt;
+
+&lt;p&gt;Decred is both a financial system and an open source project, so it makes sense for Decred to adopt many of the practices of successful open source projects.  Despite the vast majority of cryptocurrency projects being open source, many of them are run like conventional corporate entities, e.g. there is a core developer group that does not have open membership and whatever they say goes.  Decred is setup to accommodate multiple groups of developers working simultaneously on various repositories, and we have met with a decent amount of success running more like a typical open source project than a corporate entity.&lt;/p&gt;
+
+&lt;p&gt;In a corporate environment, developers are hired and assigned to work on projects in a top-down fashion, where the hiring process is used to perform quality control on the new developers.  As someone who has hired quite a few promising devs over the past 10 years, I have found the reality on the ground to be that the hiring process does a poor job of determining who is and is not a good fit from a developer perspective.  Instead of perpetuating this same error-prone process with Decred, I have &lt;a href=&quot;https://blog.decred.org/2017/07/25/Decred-Recruiting/&quot;&gt;pushed prospective developers&lt;/a&gt; to show up, hack on whatever they find most interesting, see if they get along with the existing devs, and see if the existing devs like the deliverables being created.&lt;/p&gt;
+
+&lt;p&gt;There have been some attempts to short-circuit this process, and while I have found them challenging to deal with, it has proved extremely instructive.  This has made it very clear to me that contractors in various subdomains need to undergo a vetting process that involves contractors in that particular subdomain, e.g. prospective marketing contractors need to be sure they integrate well with the existing marketing contractors and deliver good work.  Based on what I have seen to date, I will be submitting a proposal that formalizes this process, creating a Decred Contractor Clearance process.  Many nation state governments use a Security Clearance system to vet staff for their various national-security-related agencies and working groups, where the intention is to ensure you’re not a foreign spy, otherwise untrustworthy, or a risk to the organization.  For Decred, this clearance process would be about verifying that &lt;em&gt;individual&lt;/em&gt; prospective contractors are a good fit for the organization before they are allowed to bill for their work.  Note that this would apply to contractors and their subcontractors, where the clearance process will be more involved for developers than other subdomains of the project.  This means that any corporate contractor that plans to employ a large team needs to have each team member cleared before they can bill the project for their labor.&lt;/p&gt;
+
+&lt;h3&gt;More Sovereignty&lt;/h3&gt;
+
+&lt;p&gt;By putting our proposal system into production, I am substantially reducing my own influence within the project.  This is a major milestone for Decred, and my relinquishing sovereignty over the financial decisions for the project is a notable increase in sovereignty for stakeholders.&lt;/p&gt;
+
+&lt;p&gt;In light of this increased sovereignty on part of stakeholders, it is important to consider the nature of decision making within Decred.  Decred’s governance system is a form of collective intelligence, where stakeholders have influence proportional to their stake, similar to a corporation with a single class of voting shares.  Despite the similarities to a corporation, it also has elements of a nation state government, and this adds complexity in the context of making decisions.  Making good decisions requires a combination of understanding, intuition and long-term planning, and I hope to see stakeholders make decisions on this basis going forward.  Bad decisions are often driven by ignorance, greed and short-term thinking, which we need to make an effort to avoid.&lt;/p&gt;
+
+&lt;p&gt;Since the act of voting necessarily becomes political at some scale, it is useful to discuss collusion and the creation of political groups.  I, personally, try to judge the world around around me independent of others’ opinions, and I have found this to be a healthy approach in many different contexts, including with Decred.  As stakeholders form their own opinions about the various issues that Decred encounters in the future, I encourage them to think independently and exercise their sovereignty accordingly.  If stakeholders resort to forming voting blocks with predefined agendas or become unduly swayed by oracles within the space, I expect we will retrace the path cut by many nation state governments where we become a vehicle for preserving the status quo, as opposed to creating a new, better world.  By engineering out elected and appointed officials, we have already substantially reduced the incentives that align for nation state political groups, e.g. that you need some minimum threshold group size in order to actually impact the legislative process.  Decred was designed from the ground up to give permissionless representation to anyone willing to have skin-in-the-game, and I encourage stakeholders to think independently and exercise their sovereignty accordingly in that same spirit.&lt;/p&gt;
+
+&lt;h3&gt;Conflicts of Interest&lt;/h3&gt;
+
+&lt;p&gt;While acting as custodian of the development organization, I have endeavored to keep the organization free from conflicts of interest.  Since we are building a new kind of infrastructure with Decred, this process has not been straightforward.  Decred is about aligning incentives to accomplish great things, so if we are not careful, it is relatively easy to misalign incentives via the Treasury.  I encourage our users and stakeholders to give added thought to whether or not proposals create conflicts of interest, and to avoid it where possible.&lt;/p&gt;
+
+&lt;p&gt;There are several examples of conflicts of interest that I have avoided while managing the Treasury.  Early on, it was suggested that the Treasury funds be staked, so it could collect staking returns.  However, this process not only creates risk from a computer security standpoint, it begs the question “How should these tickets be voted?”.  This ambiguity is fertile ground for conflicts of interest and creates issues with custody going forward, so I decided it was not appropriate to stake the Treasury.  Another suggestion was that the Treasury be used to fund either GPU or ASIC mining of Decred.  This would have placed the development organization at odds with corporations creating mining hardware, so users and stakeholders would be incentivized to block new entrants to the mining hardware ecosystem.  &lt;a href=&quot;https://blog.sia.tech/sia-proof-of-work-reset-24b5ec439625&quot;&gt;Sia chose to go this route&lt;/a&gt; and ran into precisely the conflict of interest that I saw when the idea was suggested, and they have, as a result, suffered from substantial community fragmentation and frustration.  There will be plenty more examples of potential conflicts of interest in the future, and it is important that we work together to avoid them.&lt;/p&gt;
+
+&lt;h3&gt;Professional Services&lt;/h3&gt;
+
+&lt;p&gt;I have pretty mixed experiences dealing with professional service providers, e.g. legal, accounting, compliance, and marketing services, both in my other businesses, as well as with Decred.  I have found that many professional service providers will bill you what they think can get away with, as opposed to what they should be billing you, based on deliverables and actual hours worked.  In order to avoid these kinds of scenarios, it is ideal to have in-house staff that directly and routinely supervises and manages the work performed by professional service firms.  If there is not someone who is a full-time contractor managing these outside contractors, it can quickly become a giant waste of money.&lt;/p&gt;
+
+&lt;h3&gt;Contractor Independence&lt;/h3&gt;
+
+&lt;p&gt;A common misconception with Politeia is that it can be used by stakeholders to micromanage the existing contractors.  Per my comments above about our open source project ethos, I have found that people do their best work when they are working on whatever interests them most, whether we’re talking about inside a given subdomain or across subdomains.  Attempting to use Politeia in this context would likely backfire spectacularly, driving contractors away from the project.&lt;/p&gt;
+
+&lt;p&gt;Politeia is intended to act as a digital commons where new ideas are proposed, discussed, funded and completed &lt;em&gt;in a voluntary manner&lt;/em&gt;.  In the event of a particularly contentious disagreement between contractors within a given subdomain, e.g. where a contractor is accused of bad behavior and their termination is called for, but they are vigorously disputing the claim against them, such a disagreement could be resolved via a Politeia proposal.  Outside of resolving these more extreme disputes, contractor management should not occur via Politeia, or else we run the risk of turning staffing into a stakeholder popularity contest and driving voter apathy.&lt;/p&gt;
+
+&lt;h3&gt;Elected and Appointed Officials&lt;/h3&gt;
+
+&lt;p&gt;One of the design goals of Decred is to engineer out elected and appointed officials wherever possible.  By keeping our hierarchy as flat as possible, we can avoid the typical gatekeeper roles that are present in corporations, e.g. the HR staff only hire people who look like X, attended school Y, and have work experience Z.  Simple observation of nation state politics makes it clear that most elected officials have a persistent and deep-seated conflict of interest: they are incentivized to say what is needed to get elected, then they pursue their own or their financiers’ agendas after being elected.  Similarly, appointed officials who cannot be easily replaced or removed create an enormous amount of friction in certain scenarios, e.g. the Supreme Court of the US.  Rather than re-implementing known-flawed systems, we should be building the next, better system, just like we have already done with our consensus system and Politeia.&lt;/p&gt;
+
+&lt;h3&gt;Entitlements&lt;/h3&gt;
+
+&lt;p&gt;As a resident of Chicago and the State of Illinois in the US, I am very aware of how bad things can get when entitlements are not properly managed.  Entitlements are a serious problem for many municipal, state and federal governments, and could very well become a problem within Decred.  Some people may view Politeia and the Treasury as an opportunity to get rich at the expense of the project, which runs counter to the purpose of the Treasury, which is to magnify the value of Decred according to the will of its stakeholders.  We should remain vigilant with respect to any entitlements within the project, with an eye to preventing them from consuming large portions of the Treasury payouts.&lt;/p&gt;
+
+&lt;p&gt;In terms of contractors, I believe that contractors should not be paid when there are no substantive corresponding deliverables.  I have terminated several contractors on the basis that their deliverables do not line up with what they have billed and been paid.  Cutting the dead weight on an ongoing basis will take a fair deal of work and a critical eye from our in-house staff.&lt;/p&gt;
+
+&lt;h3&gt;Easing into Politeia&lt;/h3&gt;
+
+&lt;p&gt;Politeia constitutes a substantial change in how Decred operates, so don’t expect massive output from it right away.  Maintenance and ongoing dev work will continue as usual, but new larger projects may take a while to spin up.  New individual and corporate contractors should make a point to demonstrate their ability to deliver on smaller projects before attempting to take on major deliverable sets. Early on, expect to see several proposals regarding policies, which will help manage expectations for both contractors and users, e.g. Decred Contractor Clearance process.&lt;/p&gt;
+
+&lt;p&gt;Accumulating the existing Treasury funds required discipline and foresight, so I suggest making a point not to draw it down excessively or too quickly.  At the current accumulation rate, roughly DCR 17,000 was added to the Treasury in September 2018, while the contractor expenses from the same month were roughly USD 200,000.  This means approximately 28% of the roughly USD 700,000 added to the Treasury was spent in September 2018.  From a growth perspective, I believe it would be ideal for the Treasury to ease into increased spending in the future.  If the burn rate grows too quickly, we run the risk of an exchange rate drop causing serious drawdowns in the Treasury along with the efficiency of the expenditures dropping.  Currently, roughly 60% of the monthly Treasury payout is spent on development.&lt;/p&gt;
+
+&lt;h3&gt;Core Development&lt;/h3&gt;
+
+&lt;p&gt;While Politeia will be used to approve all Treasury payouts, the process for “core” staff will differ from other groups that use Politeia.  Just like a nation state government, Decred has numerous ongoing processes that require staffing and ongoing work.  Creating proposals on a regular basis and having stakeholders vote on it is both time consuming from the perspective of creating a proper proposal and it can create vote exhaustion in stakeholders.  From a workflow and productivity standpoint, it does not make sense to regularly create new proposals when there are minor changes in the work product being generated by core staff.&lt;/p&gt;
+
+&lt;p&gt;In the absence of a steady flow of proposals from core staff, I suggest that we create budgetary constraints for the core staff.  Currently, the bulk of the monthly Treasury payout goes to fund the core staff, and it is important that stakeholders are able to both reign this spending in or increase it as they feel appropriate.  In the event that the core staff is pursuing activities that the stakeholders consider counterproductive, it would be reasonable to create a proposal calling for a corresponding change in focus for the core staff.  Per the prior comments about contractor independence, it is important that proposals for changes in core staff focus be large in scope, to avoid micromanagement.&lt;/p&gt;
+
+&lt;p&gt;The bulk of the work done by the core staff is already public, where there are only a few things that remain private.  The outstanding items are the initial privacy work and the bookkeeping for the development organization, which will both be made public in the next few months.  Neither of these activities are creating a substantial financial burden, so I am requesting patience on this front until 2019.&lt;/p&gt;
+
+&lt;h3&gt;Milestone Bonuses&lt;/h3&gt;
+
+&lt;p&gt;To date, contractors have been paid almost exclusively on an hourly basis, where we have mostly location-independent rates that are reasonable, but not high enough to suit some staff who live in areas with high living costs.  While we have done fine using this model so far, I acknowledge that this model has issues attracting and retaining top talent.  Internally, at Company 0, I offer bonuses to my staff in DCR for delivering major milestones.  This model of offering bonuses, commonly made in stock, options or cash in a conventional corporate context, is very common in a financial or tech company.&lt;/p&gt;
+
+&lt;p&gt;With Politeia going into production, there is the opportunity to implement a similar model as a component of a proposal budget.  Both at Company 0 and with Decred contractors, I have a strong aversion to paying high hourly rates or salaries since it often does a poor job aligning incentives, e.g. less ambitious staff are incentivized to take a long time to complete work.  However, once a major milestone has been hit, I have found granting a bonus for that work to be a much better process for aligning incentives.  The contractors or employees are keen to hit the milestone, management is keen to hit the milestone, and external parties can verify that the milestone has indeed been hit.  I suggest that prospective contractors include a bonus schedule when creating larger proposals, and that the bonuses correspond with externally-verifiable milestones.&lt;/p&gt;
+
+&lt;h3&gt;Financial Transparency&lt;/h3&gt;
+
+&lt;p&gt;I had overpromised on the financial transparency front when Decred launched in February 2016, but this transparency is now on the horizon.  I will deliver a breakdown of Treasury outflows from February 2016 to late 2018, where transactions will be tagged and classified according to the type of expense, e.g. marketing, design, development.  This work will be completed before 2019 and the process of making this information public will become semi-automated, so I am no longer a bottleneck for this process.&lt;/p&gt;
+
+&lt;h3&gt;Contractor Management&lt;/h3&gt;
+
+&lt;p&gt;Managing the Decred contractors has become a larger task as time wears on, both in terms of the head count and the variety of projects under consideration.  Work has begun to automate parts of the contractor management, starting with the invoicing process.  The contractor invoice format will be standardized, so that every contractor invoice submitted will have each line item classified according to expense type.  Standardizing the invoices will allow for semi-automated creation of expense summaries, which will create financial transparency on an ongoing basis.  This contractor system is based on Politeia, where the users are the contractors, the proposals are invoices, and the administrators are auditors for the project.  Contractor invoices will be reviewed, audited, and then aggregated into a single payout for each calendar month, where each of these payouts will be approved in a proposal.  Once the basic invoicing functionality of the system is working, we plan to add the ability to propose adding, removing and auditing contractors.  We will make a more detailed announcement about the contractor system once it is ready for testing.&lt;/p&gt;
+
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;I am very excited for our stakeholders and users to participate in managing the Treasury and the project more broadly.  Acting as custodian over the Treasury has been an interesting role, but I am keen to share the sovereignty in managing the Treasury.  Now that the Decred stakeholders can participate in managing the Treasury, we can expand the scope of our work and engage more meaningfully with our users.  There will surely be surprises along the way, so expect the unexpected and stay vigilant.&lt;/p&gt;
+
+</description>
+                <pubDate>Mon, 15 Oct 2018 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2018/10/15/Politeia-in-Production/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2018/10/15/Politeia-in-Production/</guid>
+                
+                <category>Decred</category>
+                
+                <category>Politeia</category>
+                
+                <category>governance</category>
+                
+                <category>proposal system</category>
+                
+                <category>Treasury</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>A New Kind of DEX</title>
+                <description>&lt;p&gt;Decentralized exchange (“DEX”) is a concept that has received increasing attention in the cryptocurrency domain as a result of exchanges being hacked, used as exit scams or subjected to regulatory actions.  Several cryptocurrency projects exist with the intention of replacing typical centralized virtual-only cryptocurrency exchanges with a token or a blockchain.  We propose an alternative to existing decentralized exchanges with the following properties:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;It facilitates exchange between only cryptocurrencies, not fiat currencies.&lt;/li&gt;
+  &lt;li&gt;It is architected as a simple client and server, without a corresponding token or a blockchain.&lt;/li&gt;
+  &lt;li&gt;Server operators never take custody of client funds.&lt;/li&gt;
+  &lt;li&gt;It uses on-chain transactions for order fulfillment and rule enforcement.&lt;/li&gt;
+  &lt;li&gt;Server operators collect no fee for matching orders.&lt;/li&gt;
+  &lt;li&gt;Adding support for coins is a straightforward matter of adding the corresponding atomic swap support.&lt;/li&gt;
+  &lt;li&gt;Orders placed on the exchange can be internally regulated via rules enforced by the clients and the server.&lt;/li&gt;
+  &lt;li&gt;Malicious clients are managed using a reputation system based on Politeia.&lt;/li&gt;
+  &lt;li&gt;There is an upfront fee to create a client account on a server, to discourage malicious behavior.&lt;/li&gt;
+  &lt;li&gt;Order matching occurs pseudorandomly within epochs.&lt;/li&gt;
+  &lt;li&gt;Order sizes on both the buy and sell side of a trading pair have standardized lot sizes.&lt;/li&gt;
+  &lt;li&gt;Limit orders and cancels are broadcast by clients via the server, but market orders are routed from client-to-client.&lt;/li&gt;
+  &lt;li&gt;Near-instant exchange for smaller orders can be achieved through a related off-chain LN-based network which uses atomic swaps.&lt;/li&gt;
+  &lt;li&gt;Servers can connect via a mesh network to allow cross-server order matching.&lt;/li&gt;
+  &lt;li&gt;External services, e.g. wallets, can access a simple client API on the server that provides a data feed, ability to place orders, and other services.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I believe this infrastructure has the ability to substantially improve the resiliency of the cryptocurrency ecosystem as a whole, and Decred markets more specifically.  In what follows, I will explain the various considerations that have led us to propose the architecture summarized above.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h2&gt;Motivation&lt;/h2&gt;
+
+&lt;p&gt;Anyone familiar with the processes of operating an exchange, using an exchange, or getting a cryptocurrency project added to an exchange knows that there are various gatekeepers that one must deal with.  For operators of centralized exchanges, there are numerous hurdles to cross since taking custody of client funds requires compliance with various jurisdiction-specific regulations and regulatory agencies, e.g. registering with FinCEN, the Bank Secrecy Act, implementing KYC/AML policies, and registering as a money transmitter. For users of centralized exchanges, being subjected to KYC/AML is a substantial invasion of privacy and client funds on the exchange can be frozen at any time, for a variety of reasons. Projects seeking the addition of their cryptocurrency to exchanges are often pressed to pay large listing fees despite the work to add support being straightforward, and many larger exchanges are only interested in listing cryptocurrencies they feel will generate the most profit via trading fees.&lt;/p&gt;
+
+&lt;p&gt;Several DEX projects have been created to address some of these issues by replacing the exchange with a blockchain or a token, and they have met with varying degrees of success. While they remove the trusted third party (“TTP”), they insert their own products as a means to capture the trading fees, which replaces the TTP friction with a new platform friction.  The simple act of collecting trading fees serves to act as an incentive to centralize on a given solution, which runs counter to a system of open voluntary exchange.  At the same time a chain or token serves to remove the TTP, it also creates challenges with the order matching, which typically occurs via the intermediate chain or token.&lt;/p&gt;
+
+&lt;p&gt;In addition to all the challenges present from the regulatory, user experience and technological perspectives, exchanges and existing DEX projects, along with their corresponding ecosystems, are vulnerable to being exploited by high-frequency trading algorithms (“HFTs”).  HFTs have become an increasingly large influence in equity, commodity and foreign exchange markets since the 1990s, and there have been several notable &lt;a href=&quot;https://en.wikipedia.org/wiki/Flash_crash&quot;&gt;“flash crashes”&lt;/a&gt; that have occurred as a result of HFTs pulling their ephemeral liquidity simultaneously.  HFTs typically keep the positions they have open at a given time to a minimum, but they open and close these positions with a very high frequency.  They take advantage of the first in, first out (“FIFO”) order matching policies at exchanges and go to extreme measures to have a lower latency than their competition, e.g. have HFTs execute trades from machines very close to the exchange servers, pay large sums for the lowest latency data feeds, use FPGAs or ASICs for order gateways, use microwave or laser relays to lower inter-exchange latency.  While there are attempts to characterize HFTs as positive, e.g. that they add liquidity to the market, that liquidity can disappear in the blink of an eye and acts as pump to siphon funds from less sophisticated market participants to those who operate the HFTs.  Beyond the question of whether it is fair to operate these HFTs, it is clear that operators of HFTs can seriously distort the price of assets they trade, sabotaging the price discovery process.  Many of these HFTs are operated and/or funded by the investment banking arms of major international banks, meaning that despite cryptocurrencies removing the need to use banks for storage and transmission of value, the fiat banking sector can still exert substantial influence over cryptocurrencies via their HFTs.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dex-practical-considerations.png&quot; alt=&quot;Practical Considerations&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;h2&gt;Practical Considerations&lt;/h2&gt;
+
+&lt;p&gt;To make a DEX work, there are a number of basic practical considerations that must be taken into account.  Using atomic swaps, it is possible to perform trustless exchanges of supported cryptocurrencies both on-chain and off-chain.  In order to generate and maintain an order book, there needs to be a meeting place where users can communicate about prices.  To prevent users from submitting fraudulent orders, there needs to a mechanism for users to demonstrate they control the funds their orders correspond to.  Users need to be able to transmit and receive limit and market orders so their orders can be matched. Due to the constraints of on-chain transactions, limit orders must have a standardized size on-chain.  It is possible to start with a simple client-server architecture and then extend it by having the servers relay orders between each other, creating a mesh.&lt;/p&gt;
+
+&lt;h3&gt;Atomic Swaps&lt;/h3&gt;
+
+&lt;p&gt;As we demonstrated with our &lt;a href=&quot;https://github.com/decred/atomicswap&quot;&gt;atomic swap tools&lt;/a&gt; in the fall of 2017, using a particular minimal-complexity smart contract, it is possible to exchange two separate cryptocurrencies in a trustless fashion, and this process is referred to as an atomic swap.  Due to the trustless nature of the atomic swap, it is a natural basis upon which to build a DEX.  Several other DEX projects make use of atomic swaps for precisely this reason.  An atomic swap can handle settlement of matched orders both on-chain and off-chain, so the task of building a DEX becomes a question of handling the order matching process.&lt;/p&gt;
+
+&lt;h3&gt;Client-Server Architecture&lt;/h3&gt;
+
+&lt;p&gt;Using atomic swaps as the basic building block, we can begin to discuss the broad outlines of the architecture of a DEX.  Several existing DEX projects have made the decision to replace the exchange with either a standalone blockchain or an Ethereum token.  In each case, these projects use the fees associated with trade execution as a means to extract value from the exchange process.  However, the observant reader will note that atomic swaps facilitate exchange without requiring any trusted third party (“TTP”).  We take the position that, instead of recreating a TTP as a blockchain or token, that the most logical path is to create a DEX as a simple client-server service that fully eliminates the need for any TTP.  Blockchains and tokens are very “heavy” solutions and impose a variety of engineering constraints, so avoiding them frees us from these constraints.  In its most basic form, a DEX is simply a meeting place where users who want to exchange cryptocurrencies meet and participate in some price discovery process.  Using a client-server model for a DEX allows us to recreate the most basic form of human exchange in a permissionless context: an on-demand open outcry pit.&lt;/p&gt;
+
+&lt;h3&gt;Order Verification&lt;/h3&gt;
+
+&lt;p&gt;Preventing clients from creating fraudulent orders is an important component of ensuring the DEX operates smoothly.  For on-chain exchange, it is straightforward to demonstrate control of funds by signing order messages with private keys that correspond to funds referenced in an order.  Do note that signing orders using a corresponding private key bleeds the public key, which has some negative security implications, particularly in the context of an adversary with a quantum computer.  The server will need to check each order against either a local copy of the corresponding blockchain or a block explorer service to verify it is valid and properly signed.  Once a client’s order is validated by the server, it can be transmitted to one or more clients by the server.&lt;/p&gt;
+
+&lt;h3&gt;Limit and Market Order Routing&lt;/h3&gt;
+
+&lt;p&gt;A DEX requires support for 2 types of orders: limit orders and market orders.  Limit orders are standing orders to buy or sell at a particular price, and market orders are issued by spot buyers and sellers to get filled at the best price.  The server can either act as a dumb relay, where it simply retransmits orders sent by clients, or it can assemble and maintain the order book, so it only pushes updates to the order book as clients transmit orders.  In either case, limit orders will be broadcast to other clients, whereas market orders will be routed directly to the clients with the matched limit orders.  To prevent the server from faking the order book, the server will transmit only signed orders to clients, so they can verify themselves that the orders in the order book are valid.&lt;/p&gt;
+
+&lt;h3&gt;Standardized Lot Sizes&lt;/h3&gt;
+
+&lt;p&gt;An important detail to consider with an on-chain DEX is how to handle partial fills, e.g. there is limit buy order for DCR of BTC 100 and there are market sell orders being matched against it for BTC 0.1 of DCR.  If we allow for arbitrarily-sized limit and market orders, it creates problems because the client who gets partially filled must create an on-chain transaction to update their signed order, which can take several minutes or longer.  More explicitly, assume we have a limit buy order for BTC 100, a partial fill with a market sell BTC 0.1 is made against it  now the client with the limit buy order has to make change from their original order to settle the partial fill using an atomic swap, forcing them to wait until the BTC 99.9 can be made into a new order and resubmitted to the DEX.  To avoid this problem, the DEX will settle upon standardized sizes for lots on the buy and sell side of each trading pair, where clients are required to place orders using these lot sizes.&lt;/p&gt;
+
+&lt;h3&gt;Server Mesh&lt;/h3&gt;
+
+&lt;p&gt;The minimum viable product for the DEX has a simple client-server architecture, but that model has some shortcomings which can be addressed by creating a mesh of servers that relay orders between each other.  Adding support for server-to-server communication is obviously non-trivial, but it would allow for the creation of worldwide trading pairs, with the bonus that it would be stable under loss or disconnection of large segments of the network, unlike many blockchains.&lt;/p&gt;
+
+&lt;h2&gt;Aligning Incentives&lt;/h2&gt;
+
+&lt;p&gt;Cryptocurrencies have served to demonstrate the immense value that can be extracted from properly aligned incentives, and we aim to reproduce this incentive alignment in the context of the DEX.  For cryptocurrencies, alignment of incentives is related to block subsidies and how to distribute them, and with the DEX, it is a question of how to deal with trading fees, custody of funds and account fees.  As late entrants to the DEX space, we have the luxury of seeing how other DEX projects have approached the question of incentives, rather than having to innovate in a vacuum.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dex-zero-trading-fees.png&quot; alt=&quot;Zero Trading Fees&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;h3&gt;Zero Trading Fees&lt;/h3&gt;
+
+&lt;p&gt;Existing DEX projects all extract fees from each trade via their corresponding blockchain or token, but we take the position that this is the wrong incentive structure.  The collection of fees on trades directly incentivizes centralization of trading by the service provider, whether it is a blockchain, token or a service.  In order to realign incentives with a truly decentralized exchange, we need to eliminate the trading fees from the DEX.  Many prospective users are likely happy to hear this, but many DEX projects or centralized exchanges are not keen to see this being suggested.  It is reasonable to ask “if there are no trading fees, what is the incentive to run a DEX server?”, and the answer is similar to the answer to questions like “if nobody is paying you to operate a mail, chat, or blockchain server, what is the incentive to run it?”.  Running a DEX server provides you and others with a tangible utility, which is low-cost fungibility of value across blockchains.  Thankfully, not everyone needs to operate a DEX server in order for this infrastructure to provide substantial utility.&lt;/p&gt;
+
+&lt;h3&gt;Non-Custodial Servers&lt;/h3&gt;
+
+&lt;p&gt;While atomic swaps do away with the need for the server to take custody of funds, the server not taking custody of funds is another example of incentive alignment.  When an exchange takes custody of funds, its incentives change quite a bit.  It is incentivized to not lose those funds from a reputational and regulatory standpoint, but it is also incentivized to take other (undesirable) actions as a result of those concerns, e.g. collect a vast amount of personal information from users, trace the origin of user funds, share information with law enforcement officials, delay and/or limit withdrawals and deposits.  Beyond these risk-of-loss incentives, there is always incentive present for exchanges to be bad actors, e.g. steal user funds, manipulate the order book, run bots against their own books, provide select users with fee-free accounts, provide latency advantages to select users.  DEX servers not taking custody of funds rules out the majority of these various undesirable incentives.&lt;/p&gt;
+
+&lt;h3&gt;Client Account Creation Fee&lt;/h3&gt;
+
+&lt;p&gt;To prevent malicious clients from causing trouble on DEX servers, we will have a small server-configurable fee for creating a new client account.  For benevolent clients, this amounts to a one-time fee they must pay to access the server’s services, but malicious clients will have to pay this fee repeatedly if they cause trouble and have their account disabled.  These fees will not scale with volume and are intended to act as a spam deterrent, potentially offsetting some of the costs of operating the DEX server.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dex-transparency-as-a-tool.png&quot; alt=&quot;Transparency as a Tool&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;h2&gt;Transparency as a Tool&lt;/h2&gt;
+
+&lt;p&gt;To date, most participants in the blockchain space have viewed the transparency of blockchains as a necessary weakness, but we will be using this transparency as a constructive tool in the context of the DEX.  By performing exchanges on-chain and using cryptographic attestation, both clients and servers can be held accountable for malicious behavior.  Cryptographic proof of malicious client or server behavior will be submitted to a Politeia repository, creating an independently verifiable reputation system for the DEX.  More significantly, it is possible to create the equivalent of consensus rules for one or more DEX servers, allowing the server and clients to dictate and enforce what constitutes an acceptable order, which is a kind of decentralized regulation.  Another beneficial side-effect of using on-chain transparency is that it makes it much more difficult to churn “fake” volume by wash trading, and those who participate in questionable trading practices can be identified.&lt;/p&gt;
+
+&lt;h3&gt;On-Chain Transactions for Accountability&lt;/h3&gt;
+
+&lt;p&gt;When performing on-chain atomic swaps, it is possible for a client on either side of the swap to behave maliciously, so it is necessary to have accountability for this process.  Similarly, it is possible for DEX server operators to behave maliciously, and clients can demonstrate their malicious action by merit of cryptographic receipts for submitted and matched orders.  A combination of on-chain transactions and cryptographic receipts will act as the basis for a reputation system for the DEX.&lt;/p&gt;
+
+&lt;h3&gt;Politeia-based Reputation Systems&lt;/h3&gt;
+
+&lt;p&gt;This reputation system will be based on Politeia, Decred’s time-ordered git-based filesystem, and it will make it clear that a given client or server misbehaved as of a particular time and date.  It is possible to have multiple reputation systems and for them to be either public or private, depending on the use case.  Clients and servers will use these reputation services as a basis for either accepting or denying orders.&lt;/p&gt;
+
+&lt;h3&gt;Decentralized Regulation&lt;/h3&gt;
+
+&lt;p&gt;While the DEX will not be a blockchain, it is possible to create rules that are voluntarily enforced by both clients and servers in the network.  Per the prior comments about the format of orders, there are certain rules that must be adhered to for the DEX to function properly, e.g. that orders must correspond to signed messages demonstrating control of a corresponding amount of unspent coins.  Since the DEX will use on-chain transactions, it is possible to place additional arbitrary constraints on what constitutes a valid order by clients and/or servers, e.g. that a valid order requires that the coins have not moved on-chain for over 24 hours.  It is important that clients and servers agree on what constitutes a valid order or else it could cause issues when matching orders, so these additional rules are analogous to a blockchain’s consenus rules, which are required to be the same across a given blockchain for stability/fork-avoidance purposes.  Even very simple additional rules, e.g. orders are only considered valid if the coins have not moved on-chain for 24 hours or longer, can have significant consequences for the DEX, e.g. limiting clients to churning their coins only once a day.  These additional voluntarily-enforced rules constitute a form of decentralized regulation, which will allow for the DEX to block behaviors considered unacceptable by its clients and servers, e.g. excessive spoofing.&lt;/p&gt;
+
+&lt;h3&gt;Verifiable Volume&lt;/h3&gt;
+
+&lt;p&gt;A major outstanding problem with existing exchanges is that of fake volume.  It is straightforward to setup an exchange and then either outright falsify volume data or have an exchange-operated bot wash trade with itself.  Centralized exchange services have no way to demonstrate that the trades occurring on them are “real” and not falsified or wash trading since the orders occur off-chain and cannot be checked against a distributed ledger.  By having the DEX operate on-chain, the volume data can be externally verified against the corresponding blockchains and the atomic swaps that occur there.  Further, attempts to wash trade can be recognized and filtered out by merit of their on-chain transaction history.  If clients and servers see fit, they can implement rules to prevent wash trading in its various forms.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dex-lowering-barriers.png&quot; alt=&quot;Lowering Barriers to Entry&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;h2&gt;Lowering Barriers to Entry&lt;/h2&gt;
+
+&lt;p&gt;There are many obstacles to both operating an exchange and being a client of an exchange, so the DEX will be built with an eye to simplifying both these processes.  Per prior comments, the DEX will have a simple client-server architecture, which not only makes sense from a practical deployment perspective, but also from the perspective of lowering barriers to entry.  Getting a particular cryptocurrency supported by the DEX is a simple matter of adding support for atomic swaps, which can be done by developers associated with the project rather than the exchange service.  A data feed for each server will be available to its clients, and may optionally offer historical data on trades and be stored in a Politeia repository.&lt;/p&gt;
+
+&lt;h3&gt;Simple Client-Server Setup&lt;/h3&gt;
+
+&lt;p&gt;To keep the DEX decentralized it is ideal to make it simple to setup the server and be added as a client.  Setup for alternatives to the DEX is cumbersome, e.g. creating and maintaining a blockchain or setting up a service with KYC/AML regulatory constraints.  While unlikely, it is possible to block access to a given blockchain inside nation state borders, and the same goes for any exchange service.  Having a client-server architecture with a straightforward setup not only makes it easy to setup new servers and clients, it also enhances censorship resistance.&lt;/p&gt;
+
+&lt;h3&gt;Add Support Via Atomic Swaps&lt;/h3&gt;
+
+&lt;p&gt;Getting a new cryptocurrency supported on exchanges is typically an exercise in patience, politics, payment or some combination of thereof.  The current process for getting listed on exchanges is a real drain on a project’s resources and places artificial restrictions on the liquidity that a given project has access to.  The only requirement for supporting a particular cryptocurrency on the DEX will be support for the corresponding atomic swap, eliminating the existing political and procedural hurdles associated with getting listed on various services.  Simplicity in gaining access to exchange liquidity will help level the playing field between cryptocurrency projects, where some projects can obtain a substantial advantage over others via their exchange listings.&lt;/p&gt;
+
+&lt;h3&gt;Client API&lt;/h3&gt;
+
+&lt;p&gt;Data feeds will be available to clients from their respective server and will be used for both real-time and historical data.  The API will allow clients to get a snapshot of the order book, subscribe for updates to the order book, and access historical data.  Since this data is sourced from the server, the amount of real-time and historical data will vary from server-to-server.  The quality and amount of data available will likely go up substantially once servers can relay between each other.  Wallets that support the DEX will make use of the client API for user interface purposes.&lt;/p&gt;
+
+&lt;h2&gt;Latency Games&lt;/h2&gt;
+
+&lt;p&gt;As cryptocurrency markets have grown in size and maturity, they have become a ripe target for automated trading algorithms, high-frequency trading algorithms (“HFTs”) in particular.  HFTs add substantially to trading volumes cited by exchanges, but the value of this volume is questionable, at best.  The DEX will use pseudorandom order matching within epochs to limit the effects of HFTs, while still allowing for lower frequency clients to get their orders matched fairly.  It is worth mentioning that off-chain payment systems, e.g. the Lightning Network, can be used for exchange, but it is important to understand that there are issues with transparency and price discovery, similar to existing equity or commodity exchanges.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dex-pseudorandom-matching.png&quot; alt=&quot;Pseudorandom Order Matching&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;h3&gt;Pseudorandom Order Matching&lt;/h3&gt;
+
+&lt;p&gt;The extent to which modern financial markets are dominated by HFTs is not often discussed.  Making changes to reduce the influence of HFTs is even less often discussed since exchanges are incentivized to allow their operation by merit of the trading fees they generate.  Some traditional exchanges, e.g. &lt;a href=&quot;https://www.bloomberg.com/view/articles/2016-08-31/speed-bumps-are-the-hot-new-thing-for-exchanges&quot;&gt;IEX and CHX&lt;/a&gt;, have added a 350 microsecond “speed bump” to prevent latency arbitrage below this threshold, and this goes part of the way towards fixing the problem.  Instead of only partially addressing latency arbitrage, which is still possible in the face of a 350 microsecond minimum, the DEX will match orders pseudorandomly within epochs.  Using an epoch of 10 seconds or greater should act to substantially reduce the advantages that can be obtained by clients with low latency connections to their server.  By abandoning a first in, first out (“FIFO”) order matching algorithm, clients can have their orders matched in a demonstrably fair fashion within an epoch while preventing the “queue cutting” behavior required for the successful operation of most HFTs.&lt;/p&gt;
+
+&lt;h3&gt;Separate Off-chain Subsystem&lt;/h3&gt;
+
+&lt;p&gt;Considering the much lower latencies involved with off-chain payment systems, e.g. the Lightning Network, it is natural to examine their utility in the context of the DEX.  A major advantage of the DEX operating on-chain is that the swaps are demonstrable and can be verified as not wash trades.  As Lightning Labs has demonstrated, &lt;a href=&quot;https://blog.lightning.engineering/announcement/2017/11/16/ln-swap.html&quot;&gt;off-chain atomic swaps&lt;/a&gt; are indeed possible, but verifying matches occurred and that the matches are not wash trades is a non-trivial, and likely very difficult, process.  In light of these issues with transparency and price discovery that come with LN swaps, the DEX could incorporate off-chain swaps as a means for smaller orders to get filled with low latency.  Instead of having an off-chain order book, orders could be filled at the market prices set by the DEX on-chain, where transparency and price discovery can occur with less complexity.&lt;/p&gt;
+
+&lt;figure class=&quot;caption&quot;&gt;
+    &lt;img src=&quot;/images/posts/dex-big-picture.png&quot; alt=&quot;The Big Picture&quot; /&gt;
+    
+&lt;/figure&gt;
+
+&lt;h2&gt;The Big Picture&lt;/h2&gt;
+
+&lt;p&gt;Much of this proposal has been about the practical considerations of how an ideal DEX should operate and how that can be achieved using existing cryptocurrency infrastructure.  Taking a step back, what is being proposed here is a multiplexing infrastructure for cryptocurrency exchange.  In the same way that telephone and networking switches multiplex electromagnetic communications, cryptocurrencies and their exchange multiplex the storage, transmission and exchange of value.  The Lightning Network daemon, &lt;a href=&quot;https://github.com/LightningNetwork/lnd&quot;&gt;lnd&lt;/a&gt;, is an excellent example of a permissionless, neutral, non-custodial, smart contract multiplexer, similar to our proposed DEX.  While the DEX will operate on-chain and between cryptocurrencies, lnd operates off-chain and for a given cryptocurrency.&lt;/p&gt;
+
+&lt;p&gt;Existing DEX projects have the aim of making such a protocol “fat”, using it as a means to monetize their services, whereas what we are proposing is to intentionally make the protocol “thin”.  By making the protocol thin and removing the incentives to centralize, our goal is to provide long term value by bringing added stability to the cryptocurrency exchange markets.  Putting all cryptocurrencies on a more equal footing in the context of exchange will ease the process of acquiring cryptocurrencies, which will benefit the overall ecosystem.&lt;/p&gt;
+
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Having the ability to exchange cryptocurrencies with minimal friction, risk and centralization is important to the process of cryptocurrency adoption by the wider public.  Implementing the DEX as described above will:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;make the exchange process permissionless for both projects and users&lt;/li&gt;
+  &lt;li&gt;remove gatekeepers, barriers to entry, and most fees&lt;/li&gt;
+  &lt;li&gt;be more censorship resistant than an intermediate chain or token&lt;/li&gt;
+  &lt;li&gt;reduce the influence of HFTs on the price discovery process&lt;/li&gt;
+  &lt;li&gt;protect the cryptocurrency ecosystem liquidity from predation&lt;/li&gt;
+  &lt;li&gt;prevent or filter wash trading, creating verifiable volume&lt;/li&gt;
+  &lt;li&gt;facilitate decentralized regulation of trading&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This preliminary proposal is being made on the Decred Blog since it is relevant for Decred and the wider cryptocurrency community.  Once our own proposal platform, &lt;a href=&quot;https://blog.decred.org/2017/10/25/Politeia/&quot;&gt;Politeia&lt;/a&gt;, is running on mainnet, this proposal will be submitted there, with the goal of finding developers and funding for this project.  We estimate the DEX can be built for USD 1-5M in 6-18 months, depending on the developers who are interested.  If other cryptocurrency projects are interested in collaborating with us to build the DEX, we are totally open to it, feel free to drop by &lt;a href=&quot;https://slack.decred.org&quot;&gt;our Slack&lt;/a&gt; and join channel #thedex.&lt;/p&gt;
+</description>
+                <pubDate>Tue, 05 Jun 2018 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2018/06/05/A-New-Kind-of-DEX/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2018/06/05/A-New-Kind-of-DEX/</guid>
+                
+                <category>Decred</category>
+                
+                <category>decentralized exchange</category>
+                
+                <category>DEX</category>
+                
+                <category>atomic swap</category>
+                
+                <category>decentralized regulation</category>
+                
+                <category>verifiable volume</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>2018 Decred Roadmap</title>
+                <description>&lt;p&gt;It is finally time for the 2018 Decred roadmap to be released.  2017 has been quite an eventful year for both Decred and the entire cryptocurrency domain, with exchange rates surging and a substantial increase in interest from the conventional finance sector.  Decred has continued with its approach of generating deliverables before hyping them, despite many other projects in the space continuing to relentlessly hype their work far in advance of generating deliverables or focusing on exchange listings in lieu of doing any substantive work.  We have substantially improved our marketing in the past several months and expect a strong uptrend to continue on this front throughout 2018.  Here is a summary of what we have planned for the rest of 2018 and early 2019:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;SPV Wallet Support&lt;/strong&gt; - Instead of taking the typical wallet service approach where wallets connect to a centralized server, we have added support for a proper SPV mechanism that uses compact filters and works over the P2P network.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Politeia Voting&lt;/strong&gt; - Our proposal system is nearing completion and will allow users and stakeholders to make proposals, dictate what does and does not get funded, and participate in project-level decision-making.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Lightning Network&lt;/strong&gt; - The bulk of the work to port Lightning Labs’ lnd to Decred has been completed and it will be released soon.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Initial Privacy Release&lt;/strong&gt; - Privacy work has begun in earnest and we will make an incremental privacy release where we release working code and give further information about our plans and approach.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Decentralized Control of Funds&lt;/strong&gt; - While Politeia voting will be used to control the flow of dev org funds in the meantime, we will be creating a smart contract that will fully decentralize control of the dev org funds.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Decentralized Autonomous Entities&lt;/strong&gt; - Using a similar method as that used to decentralize control of the dev org funds, we will allow for the creation of DAEs on the Decred chain.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Scalability Optimizations&lt;/strong&gt; - A variety of changes, some of which are consensus changes, are required to improve the scaling properties of Decred, e.g. a new signature algorithm, multipeer sync support, and header commitments.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Decrediton Integrations&lt;/strong&gt; - The Decrediton GUI will be adding new integrations to support SPV, mobile, Politeia voting and Lightning Network.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Decentralized Exchange&lt;/strong&gt; - We will draft a proposal for a cryptocurrency-only decentralized exchange and share it publicly.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Marketing Growth&lt;/strong&gt; - Decred has lined up a presence at many of the premier cryptocurrency trade shows for the rest of 2018 and will continue dialing up its marketing efforts.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;These roadmap items are discussed in greater detail below.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h3&gt;Timelines&lt;/h3&gt;
+
+&lt;p&gt;In prior roadmap updates, I have attempted to manage users’ expectations by providing estimated completion dates, e.g. Q1 2018.  What has ended up occurring as a result of this attempt to manage expectations is that there is a vocal and confrontational minority of users who will use these estimated dates as grounds to complain about the project.  If we observe how other cryptocurrency and other software projects manage their milestones, it is typical to not include a date and rather have a list of current outstanding milestones.  After experiencing the ire of these upset users on several occasions, I believe that adopting a similar approach is ideal, where milestones are listed and they are marked as completed as the work is performed.&lt;/p&gt;
+
+&lt;h3&gt;SPV Wallet Support&lt;/h3&gt;
+
+&lt;p&gt;Many cryptocurrency projects have punted on creating a proper SPV wallet and instead opted for wallets that make use of a centralized service for receiving payment notifications.  There is certainly a level of convenience that comes with such a service, but there are often subtle consequences, e.g. that you upload an extended pubkey to the service and it knows all your addresses.  We have opted to add SPV support to dcrwallet by integrating compact filters, which is a superior method of SPV that preserves the user’s privacy while minimizing the amount of data that needs to be downloaded prior to the wallet being usable.  Compact filters came from &lt;a href=&quot;https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2017-June/014474.html&quot;&gt;discussions on the bitcoin-dev mailing list&lt;/a&gt; and was initially proposed by Alex Akselrod and Olaoluwa Osuntokun from Lightning Labs.  As of late February 2018, a full copy of the Decred chain uses 2.1 GB of storage, compared to 66 MB of storage for the headers and compact filters required by the SPV wallet.  Users interested following this SPV work more closely can do so &lt;a href=&quot;https://github.com/decred/dcrwallet/issues/1000&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3&gt;Politeia Voting&lt;/h3&gt;
+
+&lt;p&gt;The core of our proposal system, &lt;a href=&quot;https://github.com/decred/politeia/&quot;&gt;Politeia&lt;/a&gt;, was recently completed, and we are adding support for voting.  Politeia can be described succinctly as a git repository that is timestamped by the Decred chain and uses cryptographic attribution to create accountability for all participants - users and admins alike.  Having superior accountability means that proposals, comments, votes and admin actions in Politeia will not suffer from the opaque censorship that has become increasingly common amongst many major tech companies and their websites.  Once voting support is complete, Politeia will be tested on testnet and then deployed on mainnet.  After Politeia is up on mainnet, we will use it to discuss and fund new proposals, set budgets and to make ongoing payments with stakeholder approval.  It is worth noting that voting on Politeia will be restricted to stakeholders whose tickets are live in the ticket pool at the time a vote is called for a given proposal.&lt;/p&gt;
+
+&lt;h3&gt;Lightning Network&lt;/h3&gt;
+
+&lt;p&gt;Most of the work to port Lightning Labs’ lnd to Decred is done, and the remaining work is being completed currently.  Decred is a fork of Bitcoin, but Decred lacks many of the changes that were bundled into Bitcoin’s “segregated witness” changeset and this made porting lnd quite a challenge.  There are some outstanding issues with transaction signatures that need to be sorted out, at which point testing can begin on testnet.&lt;/p&gt;
+
+&lt;h3&gt;Initial Privacy Release&lt;/h3&gt;
+
+&lt;p&gt;Due to the extent of competition in the privacy subdomain, we have been reticent to expose our plans for privacy for Decred.  Several months ago, dev work started in earnest and steady progress is being made towards a prototype that can be published as part of our initial privacy release.  This initial release will be comprised of working code and a summary of our plans for several further related improvements.&lt;/p&gt;
+
+&lt;h3&gt;Decentralized Control of Funds&lt;/h3&gt;
+
+&lt;p&gt;The final step to complete the decentralization of our dev org will be decentralizing control of its funds.  Prior to formal control being decentralized, disbursements of funds will be subject to “soft” decision making via Politeia.  Rather than taking the approach used in Ethereum, which involves 100s or 1000s of lines of Solidity code, we will create a succinct smart contract that allows Decred stakeholders to vote on the disbursements on-chain and release the funds.&lt;/p&gt;
+
+&lt;h3&gt;Decentralized Autonomous Entities&lt;/h3&gt;
+
+&lt;p&gt;The method for decentralizing control of the dev org funds will be generalized to support user-created entities that we refer to as decentralized autonomous entities (“DAEs”).  Since the main distinguishing point of a corporate entity relative to an individual is ownership and control of funds and assets, we will use decentralized control of funds as the basis for DAEs within Decred.  We will focus less on the speculative component of tokenization and more on the fundamental mechanics of making it work since tokenization creates several serious scalability issues, which have led to substantial congestion on the Ethereum chain.  In short, a DAE will be comprised of a simple on-chain smart contract that delegates control over funds in the contract to a group of individuals.&lt;/p&gt;
+
+&lt;h3&gt;Scalability Optimizations&lt;/h3&gt;
+
+&lt;p&gt;In order to make Decred operate smoothly at scale, myriad optimizations need to be performed on an ongoing basis.  Since software optimization often involves a lot of details, here is a list the major planned optimizations:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/decred/dcrd/issues/950&quot;&gt;new signature algorithm&lt;/a&gt;  Changing the signatures algorithm to SigHashAllValue fixes the quadratic scaling issue Decred inherited from Bitcoin, drastically speeding up signature verification.&lt;/li&gt;
+  &lt;li&gt;mulitpeer sync support  Currently, dcrd can only sync its chain from a single peer at a time, which leads to long initial sync times, especially when connecting to a slow peer, and syncing from multiple peers simultaneously would remove that bottleneck.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/decred/dcrd/issues/971&quot;&gt;header commitments&lt;/a&gt;  Decred’s block headers can be modified to support a variety of commitments, e.g. for compact filters, unspent transaction outputs, and ticket journaling, which allows for SPV clients to operate securely, secure blockchain pruning, and tracking ticket pool state with a SPV client.&lt;/li&gt;
+  &lt;li&gt;Schnorr signatures  Signatures from multiple private keys can be aggregated into a single signature, leading to a substantial savings on network and storage for Decred nodes.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Decrediton Integrations&lt;/h3&gt;
+
+&lt;p&gt;To many users, features that are not available in a nice graphical interface effectively do not exist.  Decrediton, our cross-platform GUI wallet, will be integrating support for several of our subprojects that are nearing completion: SPV support, mobile platforms, Politeia voting and the Lightning Network.  Progress on these integrations can proceed in parallel and should be much more routine than the work required to complete the underlying backend components.&lt;/p&gt;
+
+&lt;h3&gt;Decentralized Exchange&lt;/h3&gt;
+
+&lt;p&gt;We released the &lt;a href=&quot;https://github.com/decred/atomicswap/&quot;&gt;atomicswap tools&lt;/a&gt; in September 2017 as a useful standalone component of a larger and more significant project, a decentralized exchange.  Many projects have made it their mission to decentralize the exchange process, and they have a variety of different profit models.  Our proposal for a decentralized exchange will be based on principles before profits and will be created as an open effort, which we hope will involve other cryptocurrency projects besides Decred.  The initial proposal for this system will be the next Decred blog entry and become a formal proposal within Politeia once it is live on mainnet.&lt;/p&gt;
+
+&lt;h3&gt;Marketing Growth&lt;/h3&gt;
+
+&lt;p&gt;A substantial amount of work has been done on the marketing front in the past 6 months.  Decred has booths and speaking spots lined up at many of the larger cryptocurrency events for the next several months and has attended several other conferences in the past few months.  Initial testing has been done on paid advertisements via several digital marketing services, e.g. Facebook, Twitter, and Google.  We will substantially scale up digital marketing as we continue to establish metrics on the effectiveness of various approaches.  To date, our presence has been strongest at US events, and we will be making an effort to broaden our presence to include additional countries throughout 2018.&lt;/p&gt;
+
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;There are a lot of deliverables listed on this roadmap and we’ll make an effort to knock out as much of this as we can in 2018.  I, personally, am looking forward to Politeia voting going live on mainnet since it will put the dev org funds, approximately DCR 460,000, or USD 33,000,000 at the current exchange rate, into the hands of stakeholders.  While we cannot know precisely what will happen when these funds are directed by our stakeholders, we are all here because of the belief that decentralized decision making, a form of collective intelligence, is a promising sovereignty model.  Building the infrastructure around a new sovereignty model leads naturally to novel new applications of that sovereignty, e.g. Politeia, DAEs, and the concept of digital statehood.  We are always looking for new contractors, so if this excites you or you see something you want improved, we encourage you to show up, work with us, build stuff and get paid  in decred, of course.  We can be reached on our &lt;a href=&quot;https://rocketchat.decred.org&quot;&gt;Rocket.Chat&lt;/a&gt;, &lt;a href=&quot;https://riot.im/app/#/room/#general:decred.org&quot;&gt;Matrix&lt;/a&gt;, &lt;a href=&quot;https://discord.gg/GJ2GXfz&quot;&gt;Discord&lt;/a&gt;, &lt;a href=&quot;https://decred.slack.com/&quot;&gt;Slack&lt;/a&gt;, &lt;a href=&quot;https://webchat.freenode.net/?channels=decred&amp;amp;uio=d4&quot;&gt;IRC&lt;/a&gt;, &lt;a href=&quot;https://t.me/decred&quot;&gt;Telegram&lt;/a&gt;, &lt;a href=&quot;https://reddit.com/r/decred&quot;&gt;Reddit&lt;/a&gt; or our &lt;a href=&quot;https://forum.decred.org/&quot;&gt;Forum&lt;/a&gt;. Note that Slack invites must be manually requested via one of the other chat networks before access can be granted.&lt;/p&gt;
+</description>
+                <pubDate>Wed, 28 Feb 2018 00:00:00 -0500</pubDate>
+                <link>https://blog.decred.org/2018/02/28/2018-Decred-Roadmap/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2018/02/28/2018-Decred-Roadmap/</guid>
+                
+                <category>Decred</category>
+                
+                <category>roadmap</category>
+                
+                <category>Politeia</category>
+                
+                <category>DAE</category>
+                
+                <category>Lightning Network</category>
+                
+                <category>SPV</category>
+                
+                <category>decentralized exchange</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>Cryptocurrency security: Spectre and Meltdown</title>
+                <description>&lt;p&gt;Recently Google disclosed a new class of vulnerabilities known as &lt;a href=&quot;https://meltdownattack.com/&quot;&gt;Spectre and Meltdown&lt;/a&gt;.  Folks in the Decred community have
+been asking questions about the implications of these bugs for Decred.  This
+post delineates implications of these exploits and possible countermeasures.
+These bugs are akin to traders issuing cancels without back pressure to
+manipulate the market.&lt;/p&gt;
+
+&lt;h3&gt;TL;DR&lt;/h3&gt;
+
+&lt;p&gt;Run your wallet on physical hardware you control and DON’T share with others
+and DO NOT run a web browser on the same machine. Hardware wallets do not seem
+to be affected by these bugs but great care should be taken where they are
+accessed.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h3&gt;Spectre&lt;/h3&gt;
+
+&lt;p&gt;Spectre enables memory leakage in a process.  That translates to, your
+web bowser can run hostile javascript code that can leak passwords/keys and
+other sensitive information in your web browser over the internet to a third party.&lt;/p&gt;
+
+&lt;p&gt;Currently there is no known workaround for this bug and therefore browsers and
+internet sites should be considered hostile.&lt;/p&gt;
+
+&lt;h3&gt;Meltdown&lt;/h3&gt;
+
+&lt;p&gt;Meltdown enables kernel memory leakage.  That translates to: if a third party
+has access to the hardware, e.g. a shared cloud machine, one can retrieve
+keys/passwords and other sensitive information from memory.&lt;/p&gt;
+
+&lt;p&gt;Most operating systems have fixes for this bug.  You should update to the
+latest operating system version.  Do note that your cloud provider may not have
+updated the host operating system. Verify this with your host provider.&lt;/p&gt;
+
+&lt;p&gt;Decred voting only wallets are less critical because they do not control any
+funds.  Those can be run in the cloud without risking loss of funds.&lt;/p&gt;
+
+&lt;h3&gt;Best practices&lt;/h3&gt;
+
+&lt;p&gt;It is not always possible to not run a web browser on your wallet machine but
+you can mitigate most threats.&lt;/p&gt;
+
+&lt;p&gt;The main rules are:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Update your operating system.&lt;/li&gt;
+  &lt;li&gt;Update your web browser.&lt;/li&gt;
+  &lt;li&gt;Disable autofill in your browser.&lt;/li&gt;
+  &lt;li&gt;Do NOT run a hot wallet on a shared machine or in the cloud.&lt;/li&gt;
+  &lt;li&gt;Do NOT run a browser on your wallet machine, if possible.&lt;/li&gt;
+  &lt;li&gt;Do NOT use a hardware wallet on a shared machine.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;It is obviously not always possible to not run a web browser on your wallet
+machine but there are precautions.  For now, only use Firefox and/or Chrome.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.andryou.com/scriptsafe/&quot;&gt;Block javascript&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/gorhill/uBlock&quot;&gt;Block ads&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Update your browser.  Firefox has mitigation builtin. Chrome requires &lt;a href=&quot;https://support.google.com/chrome/answer/7623121?hl=en&quot;&gt;Strict site isolation&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://support.iclasspro.com/hc/en-us/articles/218569268-How-to-Disable-and-Clear-AutoFill-Info-in-your-Browser&quot;&gt;Disable autofill in your browser&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Start browser with no tabs or sites open before doing any crypto clicking&lt;/li&gt;
+  &lt;li&gt;Quit browser AFTER completing your crypto clicking.&lt;/li&gt;
+  &lt;li&gt;Leave browser off unless you need to do anything crypto related (see step 5 and 6).&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Those plugins were selected because they exist on Firefox and Chrome.  There
+are alternatives that will work just as well.  The Decred project does not
+endorse them.&lt;/p&gt;
+</description>
+                <pubDate>Fri, 05 Jan 2018 00:00:00 -0500</pubDate>
+                <link>https://blog.decred.org/2018/01/05/Cryptocurrency-security/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2018/01/05/Cryptocurrency-security/</guid>
+                
+                <category>Decred</category>
+                
+                <category>cryptocurrency</category>
+                
+                <category>security</category>
+                
+                <category>best-practices</category>
+                
+                <category>spectre</category>
+                
+                <category>meltdown</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>Politeia Platform Challenge</title>
+                <description>&lt;p&gt;Decred’s &lt;a href=&quot;https://github.com/decred/politeia/&quot;&gt;Politeia&lt;/a&gt;, a proposal system that is part of Decred’s governance system, has a vast amount of potential uses. As such, Decred can only reasonably explore a few of these use cases on their own.&lt;/p&gt;
+
+&lt;p&gt;The Politeia Platform Challenge is a competition designed to discover alternate uses for the Politeia codebase. Competitors will use Politeia source code to address alternate use cases besides a public proposal system and then demonstrate how they work. Decred will choose the best of these on February 10th, 2018 at the Hyatt Regency in Austin, TX. The event starts at 8 PM CST, ends at 12 AM CST, and is free to attend. Drinks and food will be available for purchase.&lt;/p&gt;
+
+&lt;p&gt;Competitors are encouraged to work in teams but may work independently. National competitors will be able to demonstrate their projects remotely through video conferencing. Prizes will be awarded for 1st, 2nd, and 3rd place:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;1st Place - USD 10,000&lt;/li&gt;
+  &lt;li&gt;2nd Place - USD 5,000&lt;/li&gt;
+  &lt;li&gt;3rd Place - USD 2,000&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;All prizes are equivalent to USD and payable in Decred.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h3&gt;Competition Submission Instructions&lt;/h3&gt;
+
+&lt;p&gt;Interested parties should write a brief description of their intended project and email to pi2017 (at) decred.org. Projects that are sound and novel will be accepted for competition.&lt;/p&gt;
+
+&lt;p&gt;Competitors can post questions about the competition or Politeia codebase on:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://rocketchat.decred.org&quot;&gt;Decred Rocket.Chat&lt;/a&gt; #dev channel&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.freenode.net&quot;&gt;IRC&lt;/a&gt; #decred-dev channel&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Questions regarding presentation logistics at the Hyatt should be emailed to Courtney Brokc (cbrock at roguesignal.io). Working code must be submitted on or before January 26th, 2018 to pi2017 (at) decred.org. Please include all instructions.&lt;/p&gt;
+
+&lt;p&gt;Teams will demonstrate projects live at the event on February 10th, 2018.  Teams not located in Austin, TX will present remotely.&lt;/p&gt;
+
+&lt;h3&gt;Directions for Submissions&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Submissions must focus on some combination of changes to the &lt;a href=&quot;https://github.com/decred/politeia/&quot;&gt;backend&lt;/a&gt; and/or the &lt;a href=&quot;https://github.com/decred/politeiagui/&quot;&gt;frontend&lt;/a&gt;.  If your idea requires a different workflow than Politeia, i.e. proposals submitted by users that must be manually approved by administrators, you will need to make some modifications to the backend.  If your idea requires a new user interface, you will need to modify the frontend.&lt;/li&gt;
+  &lt;li&gt;Presentations for submissions should focus on what use cases are addressed and how the backend was changed to accommodate those use cases.  Demonstrating frontend changes is optional and we suggest using user interface mockups in lieu of having a working frontend for the submission.&lt;/li&gt;
+  &lt;li&gt;There are no requirements regarding whether or not submissions are open sourced, so it is acceptable to make a submission that corresponds to code that is not open sourced.  However, we will need to confirm each submission has working proof-of-concept level code prior the event on February 10th, 2018.  Please note that you must make the source code for the proof-of-concept available for evaluation, but not necessarily open source it publicly.  Working code must be submitted via email on or before January 26th, 2018, to pi2017 (at) decred.org along with instructions on how to make it work.&lt;/li&gt;
+  &lt;li&gt;In the case that a submission is open source, the Decred Project may choose to fund further work on the submission after the competition is complete.  As a matter of policy, the Decred Project does not financially support closed-source software, so it is not eligible for similar ongoing funding.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Details on Prize Payments&lt;/h3&gt;
+
+&lt;p&gt;Payment for the 1st, 2nd and 3rd place prizes shall occur after the winners are selected by a panel of judges.  The payment amounts shall be equivalent to USD 10,000, USD 5,000 and USD 2,000, for 1st, 2nd and 3rd places, respectively.  The payments shall be made in Decred after the second event, using an exchange rate averaged over the month of January 2018.  This average is determined by averaging the DCR/USDT exchange rate, calculated by taking the DCR/BTC and BTC/USDT data from Poloniex, weighted averages over 15 minute intervals, multiplying them, and then averaging over the month of January 2018.&lt;/p&gt;
+
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;There are myriad potential uses for Politeia, and we are excited to see what competitors come up with for the event on February 10th, 2018.  If you’re interested in getting in touch and discussing the Politeia Platform Challenge, please contact us on &lt;a href=&quot;https://github.com/decred/politeia/&quot;&gt;GitHub&lt;/a&gt;, &lt;a href=&quot;https://rocketchat.decred.org/&quot;&gt;Rocket.Chat&lt;/a&gt;, &lt;a href=&quot;https://reddit.com/r/decred/&quot;&gt;Reddit&lt;/a&gt; or &lt;a href=&quot;https://forum.decred.org/&quot;&gt;our Forum&lt;/a&gt;.&lt;/p&gt;
+</description>
+                <pubDate>Fri, 03 Nov 2017 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2017/11/03/Politeia-Platform-Challenge/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2017/11/03/Politeia-Platform-Challenge/</guid>
+                
+                <category>Decred</category>
+                
+                <category>Politeia</category>
+                
+                <category>proposal system</category>
+                
+                <category>challenge</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>Politeia: Proposals in a Timestamped Filesystem</title>
+                <description>&lt;p&gt;Rather than settling for governance infrastructure that is just good enough to get the job done, we opted to create what we consider to be the ideal infrastructure for self-governance of a cryptocurrency.  We call our system for storing governance data &lt;a href=&quot;https://github.com/decred/politeia/&quot;&gt;Politeia&lt;/a&gt;, which is based on the ancient Greek term, meaning “a system of government”.  Politeia is a system for storing off-chain data that is both versioned and timestamped, essentially “git, a popular revision control system, plus timestamping”.  Instead of attempting to store all the data related to Decred’s governance on-chain, we have opted to create an off-chain store of data that is anchored into Decred’s blockchain, minimizing its on-chain footprint.  While we will use it first as the basis for our proposal system, it has been developed as a generic tool that allows its users to create and maintain arbitrary data in a version-controlled and timestamped environment.  Politeia can be used without holding any decred, although it does depend on using a &lt;a href=&quot;https://blog.decred.org/2017/06/14/Dcrtime/&quot;&gt;dcrtime&lt;/a&gt; server for creating timestamps.  In addition to making the initial release of Politeia, we are excited to announce a competition for projects based on Politeia, with winners announced at an event in Austin, Texas on December 1st, 2017.  The prizes for 1st, 2nd and 3rd place will be the equivalent of USD 10,000, USD 5,000 and USD 2,000, respectively, paid in decred.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h3&gt;Motivation&lt;/h3&gt;
+
+&lt;p&gt;As part of Decred’s work to create a sustainable and fair system of governance, we asked the question “how should we store data related to Decred’s governance?”.  Since Decred is a cryptocurrency, a natural option would be to store this data directly on Decred’s blockchain. However, as many cryptocurrency users are aware, this is an incredibly inefficient way to store this data.  Further, a governance system will necessarily generate contentious content over time, so the question of “do we want all this data stored directly in our blockchain?” has a rather obvious answer of “no”.  In lieu of storing this data on the blockchain, the next best thing we can do is to store this data in a version-controlled repository with timestamps anchored in the blockchain.&lt;/p&gt;
+
+&lt;p&gt;The larger goal with Politeia is to create a resilient public record that mimics the function of typical nation state websites for their governance bodies, e.g. senate.gov or house.gov.  Having cryptographically verifiable public records will give users of Politeia the assurance that their governance is being executed in a transparent fashion, with all records independently verifiable and stored in a format that is difficult to forge.  By making Decred’s governance data time-ordered in a verifiable fashion, we ensure that attempts to manipulate Decred’s governance, either from outside or within, will be much more difficult than when using a conventional website or similar.&lt;/p&gt;
+
+&lt;h3&gt;Technical Summary&lt;/h3&gt;
+
+&lt;p&gt;The rough idea is “git plus timestamping”, and rather than reinvent the wheel, Politeia makes direct use of git for revision control.  Git is an excellent tool for revision control, but it gives only limited assurances as to when a particular change was made, e.g. you can recreate a git repository with fake timestamps without much effort.  As you can imagine, this ability to arbitrarily recreate a git repository makes it a less-than-ideal candidate for creating an indisputable format for recording data.  However, by adding cryptographic timestamping to git, we obtain a means of recording data that cannot be arbitrarily rewritten.  Episodically “anchoring” a repository’s commit hash into the Decred chain using dcrtime and then committing the anchor data to the same repository creates a time-ordering that is computationally infeasible to recreate.&lt;/p&gt;
+
+&lt;p&gt;Anchors stored in the git repository include a transaction hash and a merkle path, where the merkle path hashes down to the merkle root contained in the transaction corresponding to the transaction hash.  This transaction hash, merkle path and Decred’s blockchain are the minimal set of data required to independently verify an anchor is valid, indicating that a particular git commit hash existed before the timestamp on the next anchor in its repository.  This time-ordering, combined with git’s standard process of hashing commit data to generate a commit hash, is a means of demonstrating the provenance, i.e. origin or source, of that data.&lt;/p&gt;
+
+&lt;p&gt;In the context of proposals in Decred, we will be restricting proposals to text with markdown and PNG images.  This is being done to limit potential security issues that come with other more complex data formats, e.g. ZIP or PDF.  While markdown and PNGs are not exactly glamorous formats, they are simple and sufficient to express any reasonable proposal.&lt;/p&gt;
+
+&lt;p&gt;Since Politeia will require manual review of submitted proposals, we created 2 statuses for new proposals: unvetted and vetted.  This classification is useful because data submitted for inclusion may have formatting errors, contain inappropriate content, or need to satisfy other constraints before it is included into Politeia.  Each proposal submission has a corresponding censorship token issued which allows a proposal submitter to publicly demonstrate that their proposal was censored, in the case that one of the administrators censors it.  This censorship token allows for Politeia to avoid one of the more insidious and common practices of modern social media sites, where data is silently censored.  By using censorship tokens, Politeia creates a transparent censorship process, so administrators can be held publicly accountable for their censorship actions, when found to be acting inappropriately.&lt;/p&gt;
+
+&lt;h3&gt;Use cases&lt;/h3&gt;
+
+&lt;p&gt;For Decred, Politeia will provide an unalterable public record of proposals, comments on proposals, and stakeholder votes.  Although Decred will be using Politeia in a public capacity, it can provide similar utility as a private unalterable store of data.  This generic concept of versioned and timestamped data can be applied in numerous public and private use cases, e.g. document and record storage, reputation and identity systems, and supply chains.&lt;/p&gt;
+
+&lt;h3&gt;Using Politeia&lt;/h3&gt;
+
+&lt;p&gt;The Politeia backend can currently be used to store flat text, markdown and PNG images.  While this list of acceptable file types is quite short, it can easily be expanded to include other types of files, as needed.  Currently, Politeia supports creating new user accounts, users submitting proposals, administrators reviewing those proposals, and administrators either approving or censoring them.&lt;/p&gt;
+
+&lt;p&gt;Decred users are expected to use the Politeia web interface for making comments and submitting proposals.  Developers who are interested in exploring alternative applications of Politeia can use the command line interface to interact directly with the backend, per &lt;a href=&quot;https://github.com/decred/politeia#example&quot;&gt;the example on GitHub&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3&gt;Politeia Frontend&lt;/h3&gt;
+
+&lt;p&gt;The backend portion of Politeia is mostly complete, but the frontend is rather minimal and a work-in-progress.  The frontend of Politeia is a web interface, written using React and Redux, along with a user management system.  Currently, this interface is in a very raw state and will be getting a steady stream of updates over the next few weeks.  The Politeia frontend has been designed with an eye to embedding it directly into Decrediton, our GUI wallet.&lt;/p&gt;
+
+&lt;p&gt;Comments on proposals, editing proposals and voting on proposals will be added (in that order) over the next few weeks.  During this time, we will be maintaining and updating a public test server for Politeia at &lt;a href=&quot;https://test-proposals.decred.org/&quot;&gt;test-proposals.decred.org&lt;/a&gt;, so users can participate via the frontend while features are being added.  After running this public test server for a while and adding the missing features, we will reset the system and formally initiate our permanent public proposal system.  In the meantime, users are encouraged to give feedback after using our public test server.&lt;/p&gt;
+
+&lt;h3&gt;Contest Announcement&lt;/h3&gt;
+
+&lt;p&gt;Since Politeia has many potential uses and we can only reasonably explore a few of them ourselves due to time constraints, we are announcing a competition for alternate uses of Politeia.  The competition will run between now and December 1st, 2017, and we will invite the most promising competitors to give presentations at a 1-day conference in Austin, TX.  In terms of requirements, submissions must be based on the Politeia source code and be prepared for a short public demonstration.  Competitors are encouraged to work in small groups and registration is open to everyone, whether local or remote.  The winners will be announced at the conference in Austin, and prizes will be for USD 10,000 (1st place), USD 5,000 (2nd place), and USD 2,000 (3rd place), payable directly in decred.  Due to having roughly 5 weeks to prepare a submission between now and this event in Austin, applicants are expected to demo software at the proof-of-concept level.  This means that we expect submissions to be necessarily sparse on features, but they must demonstrate that the idea works and has utility beyond our proposal system.  To prevent too many submissions of the same type, we suggest competitors contact the user ingsoc on Slack to check whether a particular application is already being worked on by another competitor.&lt;/p&gt;
+
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;Politeia is a continuation of Decred’s commitment to delivering governance infrastructure that is novel and high-utility.  Creating a permanent public record of the history of Decred’s governance is an important step towards a more transparent and effective method of governance.  Any proposal submitted to Politeia that is censored can be publicly demonstrated as having been censored, creating accountability for the administrators of the proposal system.  There are myriad potential uses for Politeia, and we are excited to see what competitors come up with for the event on December 1st.  If you’re interested in getting in touch and discussing Politeia, please contact us on &lt;a href=&quot;https://github.com/decred/politeia/&quot;&gt;GitHub&lt;/a&gt;, &lt;a href=&quot;https://decred.slack.com/&quot;&gt;Slack&lt;/a&gt;, &lt;a href=&quot;https://reddit.com/r/decred/&quot;&gt;Reddit&lt;/a&gt; or &lt;a href=&quot;https://forum.decred.org/&quot;&gt;our Forum&lt;/a&gt;.&lt;/p&gt;
+</description>
+                <pubDate>Wed, 25 Oct 2017 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2017/10/25/Politeia/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2017/10/25/Politeia/</guid>
+                
+                <category>Decred</category>
+                
+                <category>Politeia</category>
+                
+                <category>proposal system</category>
+                
+                <category>timestamped filesystem</category>
+                
+                <category>dcrtime</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>On-Chain Atomic Swaps</title>
+                <description>&lt;p&gt;As many of you know, yesterday marked the &lt;a href=&quot;https://twitter.com/decredproject/status/910224860625780736&quot;&gt;first cross-chain atomic swap between Decred and Litecoin&lt;/a&gt;. This is an important step in a direction that allows users to conduct trustless, cross-chain, over-the-counter (“OTC”) trades without a third party. This disintermediates the exchange process between cryptocurrencies that support these swap transactions. We have created some simple prototype tools under the &lt;a href=&quot;https://github.com/decred/atomicswap/&quot;&gt;atomicswap repository&lt;/a&gt;, dcratomicswap, btcatomicswap and ltcatomicswap, to allow Decred, Bitcoin and Litecoin users to swap between DCR, BTC and LTC using on-chain atomic swaps. These tools were built for those who we have the means at hand to disintermediate the exchange process: transaction script and OP_CLTV support. It is worth noting that these tools do not address the issue of order book management that is typically performed with full-featured exchanges. There are some privacy and transparency consequences related to on-chain atomic swaps that are not present with centralized exchanges. As of this announcement, the tools are text-based, but we will be integrating this into the Decrediton GUI wallet in a future release. The process for on-chain atomic swaps is described in more detail below.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h3&gt;Prerequisites&lt;/h3&gt;
+
+&lt;p&gt;In order to perform an on-chain atomic swap between 2 cryptocurrencies, there are several prerequisites.  Both chains must support:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;branched transaction scripts&lt;/li&gt;
+  &lt;li&gt;the same hash algorithm in both chains’ transaction scripts&lt;/li&gt;
+  &lt;li&gt;signature checks in transaction scripts&lt;/li&gt;
+  &lt;li&gt;CheckLockTimeVerify or CheckSequenceVerify (“CLTV” and “CSV” for short) in transaction scripts&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Since Decred and Litecoin are forks of Bitcoin, the first 3 conditions are trivially satisfied.  Further, both Decred and Litecoin have been tracking updates from Bitcoin, so they both support CLTV.  The CLTV/CSV support is used to effect a refund, in the cases where either party does not complete part of the process.  With some further work on part of other Bitcoin-based cryptocurrency projects, this on-chain atomic swap can occur between any pair of cryptocurrencies that satisfy the above constraints.&lt;/p&gt;
+
+&lt;h3&gt;Use Cases&lt;/h3&gt;
+
+&lt;p&gt;On-chain atomic swaps are not useful in all cases where users want to perform an exchange.  This process is well-suited to larger trades that do not require a particularly low latency or high frequency.  Since the process involves on-chain transactions, the speed of the process is bound by the mining of blocks, which can take roughly an hour in a worst-case scenario with Bitcoin.  Additionally, users must pay transaction fees for both the swap transaction and the redeem transaction on each chain, which can have a non-trivial cost with Bitcoin.&lt;/p&gt;
+
+&lt;h3&gt;Privacy&lt;/h3&gt;
+
+&lt;p&gt;Since these swaps are on-chain, there are some privacy implications that users should be aware of.  The swap transactions on each chain include the same hashed value, meaning that anyone doing passive surveillance of the corresponding blockchains can link the coins on one side of the swap to the coins on the other side.  This is a different threat model than typical centralized exchanges, where the exchange is required by nation state regulations to retain records of user identities and activity.  Instead of having to request data from an exchange, interested parties can follow the coins from one chain to the other.  However, despite the ease of determining provenance of the coins across chains, there is no associated identity data available on the counterparties.&lt;/p&gt;
+
+&lt;h3&gt;Transparency&lt;/h3&gt;
+
+&lt;p&gt;In contrast to the way trading works at exchanges, attempts to churn volume via on-chain atomic swaps will be detectable by passive observers.  This means that users cannot show up with a small amount of coins and then create a ton of fake volume covertly.  In this sense, atomic swaps are a true return to the “moneychanger mat” scenario of the past, before the “casinoization” of exchanges.&lt;/p&gt;
+
+&lt;h3&gt;Integration&lt;/h3&gt;
+
+&lt;p&gt;Currently, this process uses a standalone binary on each side of the swap, e.g. a DCR binary and a BTC binary on each side.  The swap process has 3 steps on each side, requires some manual relaying of information via an existing communications channel, e.g. email or instant messaging, and uses a text interface, which is obviously less than ideal.  Over the next several weeks, we will integrate this process into the Decrediton GUI wallet to simplify it and automate some of the process.  It is our hope that a similar integration can occur with Bitcoin-QT and Litecoin-QT as well, for ease of use.  Detailed instructions on executing an atomic swap can be found &lt;a href=&quot;https://github.com/decred/atomicswap/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The atomic swap process has been tested against dcrwallet (CLI), Decrediton (GUI), Bitcoin Core, and Litecoin Core.&lt;/p&gt;
+
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;We hope that Decred, Bitcoin and Litecoin users get some utility out of these tools and ultimately integrate them into their respective GUI wallets.  On-chain (and ultimately off-chain) atomic swaps are an exciting technology that earmarks a leap in cryptocurrency: the direct empowerment of users. Decred will be active in this space and continue to innovate toward this goal. We are interested in integrating support for additional cryptocurrencies, so atomic swaps can occur between many different chains.  Please contact us for advice on supporting swaps for your cryptocurrency on &lt;a href=&quot;https://github.com/decred/atomicswap/&quot;&gt;GitHub&lt;/a&gt;, &lt;a href=&quot;https://decred.slack.com/&quot;&gt;Slack&lt;/a&gt;, &lt;a href=&quot;https://reddit.com/r/decred/&quot;&gt;Reddit&lt;/a&gt; or &lt;a href=&quot;https://forum.decred.org/&quot;&gt;our Forum&lt;/a&gt;.&lt;/p&gt;
+</description>
+                <pubDate>Wed, 20 Sep 2017 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2017/09/20/On-Chain-Atomic-Swaps/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2017/09/20/On-Chain-Atomic-Swaps/</guid>
+                
+                <category>Decred</category>
+                
+                <category>atomic swap</category>
+                
+                <category>Litecoin</category>
+                
+                <category>Bitcoin</category>
+                
+                <category>OTC</category>
+                
+                <category>exchange</category>
+                
+                
+            </item>
+        
+            <item>
+                <title>2017 Roadmap Update 1</title>
+                <description>&lt;p&gt;A lot has happened since we announced our 2017 Roadmap on January 9th, so we figure a progress update is in order.  We expect to complete the majority of what was laid out in the roadmap before the end of 2017.  Here is a very brief summary of our progress on the roadmap:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Convert Decred into a stakeholder-directed DAO&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;strong&gt;Hard fork voting&lt;/strong&gt; - Complete, In production&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Public proposal system&lt;/strong&gt; - Work-in-progress, ETA late Q3 2017&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;Decentralized control of DHG funds&lt;/strong&gt; - Work-in-progress, ETA early Q1 2018&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Lightning Network support&lt;/strong&gt; - Work-in-progress, ETA Q4 2017&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Improved GUI wallets&lt;/strong&gt; - Work-in-progress, ETA early Q4 2017&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;RFP process change&lt;/strong&gt; - Complete, In production&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Presence at events&lt;/strong&gt; - Work-in-progress, talks in Q3 and Q4 2017&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Enhanced privacy&lt;/strong&gt; - Delayed, ETA Q4 2017&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Payment integration support&lt;/strong&gt; - Work-in-progress, ETA Q4 2017
+Each of these roadmap items is discussed in greater detail below.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!--more--&gt;
+
+&lt;h3&gt;Hard fork voting&lt;/h3&gt;
+
+&lt;p&gt;Hard fork voting is our first major feature since Decred was released in February 2016. Further, it is a cryptocurrency first, in that it is the first “user-activated hard fork” to occur in a production setting.  Hard fork voting was made available in our April 26 release of version 1.0.0, voting on the 2 agendas (sdiff algo and LN support) began on May 14, voting completed on the agendas on June 11, and the hard fork consensus change (sdiff algo) activated on July 9.  While some cryptocurrencies have used a variation on voting to get feedback from their users on future changes, Decred is the first to deliver a consensus change that comes “pre-wired”, such that the change activates on its own, based on stakeholder voting.&lt;/p&gt;
+
+&lt;p&gt;Beyond being the first project to have successfully voted on a hard fork, we have fixed one of our major outstanding problems: a very volatile ticket price algorithm (“sdiff algo” for short).  Prior to the change, the sdiff algo would oscillate in a resonant manner, forcing users to purchase tickets during a single 12-hour interval out of each 48 hours, which drove up ticket fees and created a bad user experience for new stakeholders.  With the new sdiff algo, these problems have been resolved: fees have fallen back to the minimum levels and users can buy tickets whenever they want since the ticket price is relatively static now.&lt;/p&gt;
+
+&lt;p&gt;Now that hard fork voting has been verified to work in production, Decred can continue to make improvements to its consensus code by making episodic changes and allowing stakeholders to vote on whether or not to implement those changes.  We will make regular use of this mechanism to fix bugs, optimize and extend our consensus code, but only with explicit stakeholder approval.  The next planned  hard fork voting agenda is the changes required to support LN.&lt;/p&gt;
+
+&lt;h3&gt;Public proposal system&lt;/h3&gt;
+
+&lt;p&gt;The proposal system is a work-in-progress, with a more substantive public announcement coming in the near future.  Currently, the backend tools needed for the proposal system are nearly done, but the frontend remains unfinished.  Once the backend tools have been tested and verified to work properly, we will release them as part of our next release.&lt;/p&gt;
+
+&lt;p&gt;We have published an article about &lt;a href=&quot;https://github.com/decred/dcrtime&quot;&gt;dcrtime&lt;/a&gt;, the timestamping component of the system, and the part being worked on currently is the public version-controlled repository.  This repository tool will be generic and allow anyone, even people who are not Decred users, to create a time-ordered store of data.  We expect that many parties outside Decred can benefit from using such a tool since it is extremely helpful to have a verifiable time-ordering to certain data sets, e.g. internal financial records, corporate entity minutes, property title records, various government documents.&lt;/p&gt;
+
+&lt;p&gt;Work will begin on the frontend parts, i.e. website, of the proposal system in the next few weeks, and we will likely have a draft system up and running by end of Q3 2017 for public use.&lt;/p&gt;
+
+&lt;h3&gt;Decentralized control of DHG funds&lt;/h3&gt;
+
+&lt;p&gt;Once the proposal system is up and running, it will be straightforward to add “soft” voting to it.  By “soft”, we mean that votes can be tallied and DCR from the development organization will flow according to stakeholder voting, albeit without decentralized control of those funds.  In principle, this process is straightforward: take a snapshot of the ticket pool as of the proposal going up for vote, then let those tickets vote on this new proposal for a week.  While a process like this can work in terms of an off-chain tally for voting in the proposal system, it means that a ton of data would need to be stored on-chain for each outbound payment.&lt;/p&gt;
+
+&lt;p&gt;We will be working to explore our options in terms of what can be done to reduce the on-chain footprint of proposal voting over the next few months.  The soft voting described above will likely be available before the end of Q3 2017, but the step where we formally decentralize control of the funds needs additional study from both a blockchain efficiency and security perspective.  We estimate we will have a solution developed by early Q1 2018.&lt;/p&gt;
+
+&lt;h3&gt;Lightning network support&lt;/h3&gt;
+
+&lt;p&gt;As part of our first hard fork vote, stakeholders voted on whether or not to start working on LN integration, which was a “soft” signaling issue.  Similar to the sdiff algo change, there was roughly a 98% vote in favor of this agenda.  In the future, we will assess stakeholder sentiment via the proposal system, so we can avoid on-chain voting for non-consensus issues.&lt;/p&gt;
+
+&lt;p&gt;Since btcd, the upstream project from dcrd, has almost all the code needed to support LN, it is a matter of syncing commits from btcd to dcrd to support LN.  That said, this process is rather involved, due to the changes that were made to create dcrd.  We estimate that these changes will be integrated and ready for stakeholder vote in Q4 2017.&lt;/p&gt;
+
+&lt;h3&gt;Improved GUI wallets&lt;/h3&gt;
+
+&lt;p&gt;A lot of progress has been made with GUI wallets since January.  Both Decrediton and Paymetheus support all basic staking and voting functions, and Decrediton supports automatic ticket purchasing.  Most dcrwallet features are now available in Decrediton and Paymetheus, with the exception of solo staking support.  Lack of solo staking support from the GUIs is intentional because of the user experience problems that come with missing votes due to misconfiguration.&lt;/p&gt;
+
+&lt;p&gt;A number of stakeholders have requested more visibility into their history of their ticket purchases and voting, so we will be adding a view for that.  Once LN integration is further along, we will need to add support to the GUI wallets for opening and closing channels.  We estimate to have a GUI wallet that is feature-complete in early Q4 2017.&lt;/p&gt;
+
+&lt;h3&gt;RFP process change&lt;/h3&gt;
+
+&lt;p&gt;The cutover to a contractor-based versus project-based system for paying project contributors has been a serious success.  We have found it much easier to work with contractors who have an ongoing role than with contractors who sign up to perform a narrow task or project.  As of the original roadmap announcement, there were 8 of us at Company 0 working on Decred, and now we have roughly 30 people actively working on Decred in a given month.  We still have quite a bit of development organization funds to spend on more contractors, over USD 300,000 a month, so we have a lot more growing to do.&lt;/p&gt;
+
+&lt;p&gt;Since January, we have made substantial improvements on the marketing, design and documentation fronts.  From a strategy perspective, we will be intensifying our focus on marketing throughout the remainder of 2017.&lt;/p&gt;
+
+&lt;h3&gt;Presence at events&lt;/h3&gt;
+
+&lt;p&gt;We have steadily increased our presence online, at meetups and conferences over the past 7 months.  I gave a talk at Coinbase in March and a couple of local blockchain meetups in Illinois, and have talks at a couple larger events planned in Q3 and Q4 2017.  Dave Collins, other contractors and I have given interviews online to various cryptocurrency podcasts.  Decred contractors attended Consensus and Defcon conferences and did some guerilla marketing.&lt;/p&gt;
+
+&lt;h3&gt;Enhanced privacy&lt;/h3&gt;
+
+&lt;p&gt;While the original roadmap targeted 2017 late Q2 or early Q3 for starting work on privacy enhancements, we will be delaying the start of this work to Q4 2017.  We are fully occupied with developing other parts of Decred, and in order to make meaningful progress on the privacy front, we need to free up developer time.  We will publish a series of articles explaining our approach in the run-up to announcing our privacy enhancement plan.&lt;/p&gt;
+
+&lt;h3&gt;Payment integration support&lt;/h3&gt;
+
+&lt;p&gt;The internal work we can do to get Decred integrated as a payment method has started only recently.  However, we expect that we can deliver plugins to allow most online merchants to accept decred directly as a payment method by the end of Q4 2017.  Both &lt;a href=&quot;https://www.coinpayments.net/&quot;&gt;CoinPayments&lt;/a&gt; and &lt;a href=&quot;https://wirexapp.com&quot;&gt;Wirex&lt;/a&gt; support Decred, but this support depends on your jurisdiction and local fiat currency.  We will be seeking to get additional payment processors added throughout the rest of 2017.&lt;/p&gt;
+
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;We are making steady progress towards completing the majority of the 2017 roadmap items this year.  As an organization, we’ve come a long way in a short time and we’ve got a lot more growing to do. If you have any questions, ideas or comments about this roadmap update, I encourage you to comment in &lt;a href=&quot;https://forum.decred.org/threads/2017-roadmap-update-1.5491/&quot;&gt;the forum thread&lt;/a&gt;.&lt;/p&gt;
+</description>
+                <pubDate>Wed, 02 Aug 2017 00:00:00 -0400</pubDate>
+                <link>https://blog.decred.org/2017/08/02/2017-Roadmap-Update-1/</link>
+                <guid isPermaLink="true">https://blog.decred.org/2017/08/02/2017-Roadmap-Update-1/</guid>
+                
+                <category>Decred</category>
+                
+                <category>contractors</category>
+                
+                <category>DAO</category>
+                
+                <category>hard fork voting</category>
+                
+                <category>LN</category>
+                
+                <category>privacy</category>
+                
+                <category>payment</category>
+                
+                
+            </item>
+        
+    </channel>
+</rss>

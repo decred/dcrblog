@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">    
+    <title>A New Kind of DEX</title> 
+    <meta name="description" content="Decred is an open and progressive cryptocurrency with a system of community-based governance integrated into its blockchain.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/mstile-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" type="text/css" href="/css/fonts-lato.css" />
+    <link rel="stylesheet" href="/css/fonts-ssp.css">
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="canonical" href="https://blog.decred.org/2018/06/05/A-New-Kind-of-DEX/">
+    <link rel="alternate" type="application/rss+xml" title="Decred Blog Feed" href="https://blog.decred.org/feed.xml">
+</head>
+<body>
+    <nav id="top" class="site-navigation">
+        <div class="inner">
+            <button id="menu-toggle" aria-expanded="false">Menu</button>
+            <div class="nav-menu">
+                <ul class="menu">
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="/">Home</a>
+                  </li>
+                
+                  
+                  
+                  <li class="">
+                    <a class="" href="https://github.com/decred/">Github</a>
+                  </li>
+                
+                </ul>        
+            </div><!-- .nav-menu -->
+            <a class="subscribe-button fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">Subscribe</span></a>
+        </div><!-- .inner -->
+    </nav><!-- .site-navigation -->
+    <header class="site-header">
+        <div class="inner">
+	    <h1 class="site-title"><a class="logo-text" href="/"><img class="logo-art" src="/images/banner.png" alt="Decred Blog"></a></h1>
+        </div><!-- .inner -->
+    </header>
+    <div class="site-content">
+    <div class="inner">
+        <main class="site-main">
+            <article class="post">
+                <header class="entry-header"> 
+                    <div class="entry-header-wrap">
+                        
+                        <div class="post-thumbnail">
+                            <img src="/images/posts/dex-header.png" alt="A New Kind of DEX">
+                        </div><!-- .post-thumbnail -->
+                        
+                        <h1 class="entry-title">A New Kind of DEX</h1>
+                    </div><!-- .entry-header-wrap -->
+                    <div class="entry-meta">
+                        by <span class="post-author">Jake Yocom-Piatt</span> on <time class="published" datetime="2018-06-05">June 5, 2018</time>
+                    </div><!-- .entry-meta -->
+                </header><!-- .entry-header -->
+                <div class="entry-content">
+                    <p>Decentralized exchange (“DEX”) is a concept that has received increasing attention in the cryptocurrency domain as a result of exchanges being hacked, used as exit scams or subjected to regulatory actions.  Several cryptocurrency projects exist with the intention of replacing typical centralized virtual-only cryptocurrency exchanges with a token or a blockchain.  We propose an alternative to existing decentralized exchanges with the following properties:</p>
+
+<ul>
+  <li>It facilitates exchange between only cryptocurrencies, not fiat currencies.</li>
+  <li>It is architected as a simple client and server, without a corresponding token or a blockchain.</li>
+  <li>Server operators never take custody of client funds.</li>
+  <li>It uses on-chain transactions for order fulfillment and rule enforcement.</li>
+  <li>Server operators collect no fee for matching orders.</li>
+  <li>Adding support for coins is a straightforward matter of adding the corresponding atomic swap support.</li>
+  <li>Orders placed on the exchange can be internally regulated via rules enforced by the clients and the server.</li>
+  <li>Malicious clients are managed using a reputation system based on Politeia.</li>
+  <li>There is an upfront fee to create a client account on a server, to discourage malicious behavior.</li>
+  <li>Order matching occurs pseudorandomly within epochs.</li>
+  <li>Order sizes on both the buy and sell side of a trading pair have standardized lot sizes.</li>
+  <li>Limit orders and cancels are broadcast by clients via the server, but market orders are routed from client-to-client.</li>
+  <li>Near-instant exchange for smaller orders can be achieved through a related off-chain LN-based network which uses atomic swaps.</li>
+  <li>Servers can connect via a mesh network to allow cross-server order matching.</li>
+  <li>External services, e.g. wallets, can access a simple client API on the server that provides a data feed, ability to place orders, and other services.</li>
+</ul>
+
+<p>I believe this infrastructure has the ability to substantially improve the resiliency of the cryptocurrency ecosystem as a whole, and Decred markets more specifically.  In what follows, I will explain the various considerations that have led us to propose the architecture summarized above.</p>
+
+<!--more-->
+
+<h2>Motivation</h2>
+
+<p>Anyone familiar with the processes of operating an exchange, using an exchange, or getting a cryptocurrency project added to an exchange knows that there are various gatekeepers that one must deal with.  For operators of centralized exchanges, there are numerous hurdles to cross since taking custody of client funds requires compliance with various jurisdiction-specific regulations and regulatory agencies, e.g. registering with FinCEN, the Bank Secrecy Act, implementing KYC/AML policies, and registering as a money transmitter. For users of centralized exchanges, being subjected to KYC/AML is a substantial invasion of privacy and client funds on the exchange can be frozen at any time, for a variety of reasons. Projects seeking the addition of their cryptocurrency to exchanges are often pressed to pay large listing fees despite the work to add support being straightforward, and many larger exchanges are only interested in listing cryptocurrencies they feel will generate the most profit via trading fees.</p>
+
+<p>Several DEX projects have been created to address some of these issues by replacing the exchange with a blockchain or a token, and they have met with varying degrees of success. While they remove the trusted third party (“TTP”), they insert their own products as a means to capture the trading fees, which replaces the TTP friction with a new platform friction.  The simple act of collecting trading fees serves to act as an incentive to centralize on a given solution, which runs counter to a system of open voluntary exchange.  At the same time a chain or token serves to remove the TTP, it also creates challenges with the order matching, which typically occurs via the intermediate chain or token.</p>
+
+<p>In addition to all the challenges present from the regulatory, user experience and technological perspectives, exchanges and existing DEX projects, along with their corresponding ecosystems, are vulnerable to being exploited by high-frequency trading algorithms (“HFTs”).  HFTs have become an increasingly large influence in equity, commodity and foreign exchange markets since the 1990s, and there have been several notable <a href="https://en.wikipedia.org/wiki/Flash_crash">“flash crashes”</a> that have occurred as a result of HFTs pulling their ephemeral liquidity simultaneously.  HFTs typically keep the positions they have open at a given time to a minimum, but they open and close these positions with a very high frequency.  They take advantage of the first in, first out (“FIFO”) order matching policies at exchanges and go to extreme measures to have a lower latency than their competition, e.g. have HFTs execute trades from machines very close to the exchange servers, pay large sums for the lowest latency data feeds, use FPGAs or ASICs for order gateways, use microwave or laser relays to lower inter-exchange latency.  While there are attempts to characterize HFTs as positive, e.g. that they add liquidity to the market, that liquidity can disappear in the blink of an eye and acts as pump to siphon funds from less sophisticated market participants to those who operate the HFTs.  Beyond the question of whether it is fair to operate these HFTs, it is clear that operators of HFTs can seriously distort the price of assets they trade, sabotaging the price discovery process.  Many of these HFTs are operated and/or funded by the investment banking arms of major international banks, meaning that despite cryptocurrencies removing the need to use banks for storage and transmission of value, the fiat banking sector can still exert substantial influence over cryptocurrencies via their HFTs.</p>
+
+<figure class="caption">
+    <img src="/images/posts/dex-practical-considerations.png" alt="Practical Considerations" />
+    
+</figure>
+
+<h2>Practical Considerations</h2>
+
+<p>To make a DEX work, there are a number of basic practical considerations that must be taken into account.  Using atomic swaps, it is possible to perform trustless exchanges of supported cryptocurrencies both on-chain and off-chain.  In order to generate and maintain an order book, there needs to be a meeting place where users can communicate about prices.  To prevent users from submitting fraudulent orders, there needs to a mechanism for users to demonstrate they control the funds their orders correspond to.  Users need to be able to transmit and receive limit and market orders so their orders can be matched. Due to the constraints of on-chain transactions, limit orders must have a standardized size on-chain.  It is possible to start with a simple client-server architecture and then extend it by having the servers relay orders between each other, creating a mesh.</p>
+
+<h3>Atomic Swaps</h3>
+
+<p>As we demonstrated with our <a href="https://github.com/decred/atomicswap">atomic swap tools</a> in the fall of 2017, using a particular minimal-complexity smart contract, it is possible to exchange two separate cryptocurrencies in a trustless fashion, and this process is referred to as an atomic swap.  Due to the trustless nature of the atomic swap, it is a natural basis upon which to build a DEX.  Several other DEX projects make use of atomic swaps for precisely this reason.  An atomic swap can handle settlement of matched orders both on-chain and off-chain, so the task of building a DEX becomes a question of handling the order matching process.</p>
+
+<h3>Client-Server Architecture</h3>
+
+<p>Using atomic swaps as the basic building block, we can begin to discuss the broad outlines of the architecture of a DEX.  Several existing DEX projects have made the decision to replace the exchange with either a standalone blockchain or an Ethereum token.  In each case, these projects use the fees associated with trade execution as a means to extract value from the exchange process.  However, the observant reader will note that atomic swaps facilitate exchange without requiring any trusted third party (“TTP”).  We take the position that, instead of recreating a TTP as a blockchain or token, that the most logical path is to create a DEX as a simple client-server service that fully eliminates the need for any TTP.  Blockchains and tokens are very “heavy” solutions and impose a variety of engineering constraints, so avoiding them frees us from these constraints.  In its most basic form, a DEX is simply a meeting place where users who want to exchange cryptocurrencies meet and participate in some price discovery process.  Using a client-server model for a DEX allows us to recreate the most basic form of human exchange in a permissionless context: an on-demand open outcry pit.</p>
+
+<h3>Order Verification</h3>
+
+<p>Preventing clients from creating fraudulent orders is an important component of ensuring the DEX operates smoothly.  For on-chain exchange, it is straightforward to demonstrate control of funds by signing order messages with private keys that correspond to funds referenced in an order.  Do note that signing orders using a corresponding private key bleeds the public key, which has some negative security implications, particularly in the context of an adversary with a quantum computer.  The server will need to check each order against either a local copy of the corresponding blockchain or a block explorer service to verify it is valid and properly signed.  Once a client’s order is validated by the server, it can be transmitted to one or more clients by the server.</p>
+
+<h3>Limit and Market Order Routing</h3>
+
+<p>A DEX requires support for 2 types of orders: limit orders and market orders.  Limit orders are standing orders to buy or sell at a particular price, and market orders are issued by spot buyers and sellers to get filled at the best price.  The server can either act as a dumb relay, where it simply retransmits orders sent by clients, or it can assemble and maintain the order book, so it only pushes updates to the order book as clients transmit orders.  In either case, limit orders will be broadcast to other clients, whereas market orders will be routed directly to the clients with the matched limit orders.  To prevent the server from faking the order book, the server will transmit only signed orders to clients, so they can verify themselves that the orders in the order book are valid.</p>
+
+<h3>Standardized Lot Sizes</h3>
+
+<p>An important detail to consider with an on-chain DEX is how to handle partial fills, e.g. there is limit buy order for DCR of BTC 100 and there are market sell orders being matched against it for BTC 0.1 of DCR.  If we allow for arbitrarily-sized limit and market orders, it creates problems because the client who gets partially filled must create an on-chain transaction to update their signed order, which can take several minutes or longer.  More explicitly, assume we have a limit buy order for BTC 100, a partial fill with a market sell BTC 0.1 is made against it  now the client with the limit buy order has to make change from their original order to settle the partial fill using an atomic swap, forcing them to wait until the BTC 99.9 can be made into a new order and resubmitted to the DEX.  To avoid this problem, the DEX will settle upon standardized sizes for lots on the buy and sell side of each trading pair, where clients are required to place orders using these lot sizes.</p>
+
+<h3>Server Mesh</h3>
+
+<p>The minimum viable product for the DEX has a simple client-server architecture, but that model has some shortcomings which can be addressed by creating a mesh of servers that relay orders between each other.  Adding support for server-to-server communication is obviously non-trivial, but it would allow for the creation of worldwide trading pairs, with the bonus that it would be stable under loss or disconnection of large segments of the network, unlike many blockchains.</p>
+
+<h2>Aligning Incentives</h2>
+
+<p>Cryptocurrencies have served to demonstrate the immense value that can be extracted from properly aligned incentives, and we aim to reproduce this incentive alignment in the context of the DEX.  For cryptocurrencies, alignment of incentives is related to block subsidies and how to distribute them, and with the DEX, it is a question of how to deal with trading fees, custody of funds and account fees.  As late entrants to the DEX space, we have the luxury of seeing how other DEX projects have approached the question of incentives, rather than having to innovate in a vacuum.</p>
+
+<figure class="caption">
+    <img src="/images/posts/dex-zero-trading-fees.png" alt="Zero Trading Fees" />
+    
+</figure>
+
+<h3>Zero Trading Fees</h3>
+
+<p>Existing DEX projects all extract fees from each trade via their corresponding blockchain or token, but we take the position that this is the wrong incentive structure.  The collection of fees on trades directly incentivizes centralization of trading by the service provider, whether it is a blockchain, token or a service.  In order to realign incentives with a truly decentralized exchange, we need to eliminate the trading fees from the DEX.  Many prospective users are likely happy to hear this, but many DEX projects or centralized exchanges are not keen to see this being suggested.  It is reasonable to ask “if there are no trading fees, what is the incentive to run a DEX server?”, and the answer is similar to the answer to questions like “if nobody is paying you to operate a mail, chat, or blockchain server, what is the incentive to run it?”.  Running a DEX server provides you and others with a tangible utility, which is low-cost fungibility of value across blockchains.  Thankfully, not everyone needs to operate a DEX server in order for this infrastructure to provide substantial utility.</p>
+
+<h3>Non-Custodial Servers</h3>
+
+<p>While atomic swaps do away with the need for the server to take custody of funds, the server not taking custody of funds is another example of incentive alignment.  When an exchange takes custody of funds, its incentives change quite a bit.  It is incentivized to not lose those funds from a reputational and regulatory standpoint, but it is also incentivized to take other (undesirable) actions as a result of those concerns, e.g. collect a vast amount of personal information from users, trace the origin of user funds, share information with law enforcement officials, delay and/or limit withdrawals and deposits.  Beyond these risk-of-loss incentives, there is always incentive present for exchanges to be bad actors, e.g. steal user funds, manipulate the order book, run bots against their own books, provide select users with fee-free accounts, provide latency advantages to select users.  DEX servers not taking custody of funds rules out the majority of these various undesirable incentives.</p>
+
+<h3>Client Account Creation Fee</h3>
+
+<p>To prevent malicious clients from causing trouble on DEX servers, we will have a small server-configurable fee for creating a new client account.  For benevolent clients, this amounts to a one-time fee they must pay to access the server’s services, but malicious clients will have to pay this fee repeatedly if they cause trouble and have their account disabled.  These fees will not scale with volume and are intended to act as a spam deterrent, potentially offsetting some of the costs of operating the DEX server.</p>
+
+<figure class="caption">
+    <img src="/images/posts/dex-transparency-as-a-tool.png" alt="Transparency as a Tool" />
+    
+</figure>
+
+<h2>Transparency as a Tool</h2>
+
+<p>To date, most participants in the blockchain space have viewed the transparency of blockchains as a necessary weakness, but we will be using this transparency as a constructive tool in the context of the DEX.  By performing exchanges on-chain and using cryptographic attestation, both clients and servers can be held accountable for malicious behavior.  Cryptographic proof of malicious client or server behavior will be submitted to a Politeia repository, creating an independently verifiable reputation system for the DEX.  More significantly, it is possible to create the equivalent of consensus rules for one or more DEX servers, allowing the server and clients to dictate and enforce what constitutes an acceptable order, which is a kind of decentralized regulation.  Another beneficial side-effect of using on-chain transparency is that it makes it much more difficult to churn “fake” volume by wash trading, and those who participate in questionable trading practices can be identified.</p>
+
+<h3>On-Chain Transactions for Accountability</h3>
+
+<p>When performing on-chain atomic swaps, it is possible for a client on either side of the swap to behave maliciously, so it is necessary to have accountability for this process.  Similarly, it is possible for DEX server operators to behave maliciously, and clients can demonstrate their malicious action by merit of cryptographic receipts for submitted and matched orders.  A combination of on-chain transactions and cryptographic receipts will act as the basis for a reputation system for the DEX.</p>
+
+<h3>Politeia-based Reputation Systems</h3>
+
+<p>This reputation system will be based on Politeia, Decred’s time-ordered git-based filesystem, and it will make it clear that a given client or server misbehaved as of a particular time and date.  It is possible to have multiple reputation systems and for them to be either public or private, depending on the use case.  Clients and servers will use these reputation services as a basis for either accepting or denying orders.</p>
+
+<h3>Decentralized Regulation</h3>
+
+<p>While the DEX will not be a blockchain, it is possible to create rules that are voluntarily enforced by both clients and servers in the network.  Per the prior comments about the format of orders, there are certain rules that must be adhered to for the DEX to function properly, e.g. that orders must correspond to signed messages demonstrating control of a corresponding amount of unspent coins.  Since the DEX will use on-chain transactions, it is possible to place additional arbitrary constraints on what constitutes a valid order by clients and/or servers, e.g. that a valid order requires that the coins have not moved on-chain for over 24 hours.  It is important that clients and servers agree on what constitutes a valid order or else it could cause issues when matching orders, so these additional rules are analogous to a blockchain’s consenus rules, which are required to be the same across a given blockchain for stability/fork-avoidance purposes.  Even very simple additional rules, e.g. orders are only considered valid if the coins have not moved on-chain for 24 hours or longer, can have significant consequences for the DEX, e.g. limiting clients to churning their coins only once a day.  These additional voluntarily-enforced rules constitute a form of decentralized regulation, which will allow for the DEX to block behaviors considered unacceptable by its clients and servers, e.g. excessive spoofing.</p>
+
+<h3>Verifiable Volume</h3>
+
+<p>A major outstanding problem with existing exchanges is that of fake volume.  It is straightforward to setup an exchange and then either outright falsify volume data or have an exchange-operated bot wash trade with itself.  Centralized exchange services have no way to demonstrate that the trades occurring on them are “real” and not falsified or wash trading since the orders occur off-chain and cannot be checked against a distributed ledger.  By having the DEX operate on-chain, the volume data can be externally verified against the corresponding blockchains and the atomic swaps that occur there.  Further, attempts to wash trade can be recognized and filtered out by merit of their on-chain transaction history.  If clients and servers see fit, they can implement rules to prevent wash trading in its various forms.</p>
+
+<figure class="caption">
+    <img src="/images/posts/dex-lowering-barriers.png" alt="Lowering Barriers to Entry" />
+    
+</figure>
+
+<h2>Lowering Barriers to Entry</h2>
+
+<p>There are many obstacles to both operating an exchange and being a client of an exchange, so the DEX will be built with an eye to simplifying both these processes.  Per prior comments, the DEX will have a simple client-server architecture, which not only makes sense from a practical deployment perspective, but also from the perspective of lowering barriers to entry.  Getting a particular cryptocurrency supported by the DEX is a simple matter of adding support for atomic swaps, which can be done by developers associated with the project rather than the exchange service.  A data feed for each server will be available to its clients, and may optionally offer historical data on trades and be stored in a Politeia repository.</p>
+
+<h3>Simple Client-Server Setup</h3>
+
+<p>To keep the DEX decentralized it is ideal to make it simple to setup the server and be added as a client.  Setup for alternatives to the DEX is cumbersome, e.g. creating and maintaining a blockchain or setting up a service with KYC/AML regulatory constraints.  While unlikely, it is possible to block access to a given blockchain inside nation state borders, and the same goes for any exchange service.  Having a client-server architecture with a straightforward setup not only makes it easy to setup new servers and clients, it also enhances censorship resistance.</p>
+
+<h3>Add Support Via Atomic Swaps</h3>
+
+<p>Getting a new cryptocurrency supported on exchanges is typically an exercise in patience, politics, payment or some combination of thereof.  The current process for getting listed on exchanges is a real drain on a project’s resources and places artificial restrictions on the liquidity that a given project has access to.  The only requirement for supporting a particular cryptocurrency on the DEX will be support for the corresponding atomic swap, eliminating the existing political and procedural hurdles associated with getting listed on various services.  Simplicity in gaining access to exchange liquidity will help level the playing field between cryptocurrency projects, where some projects can obtain a substantial advantage over others via their exchange listings.</p>
+
+<h3>Client API</h3>
+
+<p>Data feeds will be available to clients from their respective server and will be used for both real-time and historical data.  The API will allow clients to get a snapshot of the order book, subscribe for updates to the order book, and access historical data.  Since this data is sourced from the server, the amount of real-time and historical data will vary from server-to-server.  The quality and amount of data available will likely go up substantially once servers can relay between each other.  Wallets that support the DEX will make use of the client API for user interface purposes.</p>
+
+<h2>Latency Games</h2>
+
+<p>As cryptocurrency markets have grown in size and maturity, they have become a ripe target for automated trading algorithms, high-frequency trading algorithms (“HFTs”) in particular.  HFTs add substantially to trading volumes cited by exchanges, but the value of this volume is questionable, at best.  The DEX will use pseudorandom order matching within epochs to limit the effects of HFTs, while still allowing for lower frequency clients to get their orders matched fairly.  It is worth mentioning that off-chain payment systems, e.g. the Lightning Network, can be used for exchange, but it is important to understand that there are issues with transparency and price discovery, similar to existing equity or commodity exchanges.</p>
+
+<figure class="caption">
+    <img src="/images/posts/dex-pseudorandom-matching.png" alt="Pseudorandom Order Matching" />
+    
+</figure>
+
+<h3>Pseudorandom Order Matching</h3>
+
+<p>The extent to which modern financial markets are dominated by HFTs is not often discussed.  Making changes to reduce the influence of HFTs is even less often discussed since exchanges are incentivized to allow their operation by merit of the trading fees they generate.  Some traditional exchanges, e.g. <a href="https://www.bloomberg.com/view/articles/2016-08-31/speed-bumps-are-the-hot-new-thing-for-exchanges">IEX and CHX</a>, have added a 350 microsecond “speed bump” to prevent latency arbitrage below this threshold, and this goes part of the way towards fixing the problem.  Instead of only partially addressing latency arbitrage, which is still possible in the face of a 350 microsecond minimum, the DEX will match orders pseudorandomly within epochs.  Using an epoch of 10 seconds or greater should act to substantially reduce the advantages that can be obtained by clients with low latency connections to their server.  By abandoning a first in, first out (“FIFO”) order matching algorithm, clients can have their orders matched in a demonstrably fair fashion within an epoch while preventing the “queue cutting” behavior required for the successful operation of most HFTs.</p>
+
+<h3>Separate Off-chain Subsystem</h3>
+
+<p>Considering the much lower latencies involved with off-chain payment systems, e.g. the Lightning Network, it is natural to examine their utility in the context of the DEX.  A major advantage of the DEX operating on-chain is that the swaps are demonstrable and can be verified as not wash trades.  As Lightning Labs has demonstrated, <a href="https://blog.lightning.engineering/announcement/2017/11/16/ln-swap.html">off-chain atomic swaps</a> are indeed possible, but verifying matches occurred and that the matches are not wash trades is a non-trivial, and likely very difficult, process.  In light of these issues with transparency and price discovery that come with LN swaps, the DEX could incorporate off-chain swaps as a means for smaller orders to get filled with low latency.  Instead of having an off-chain order book, orders could be filled at the market prices set by the DEX on-chain, where transparency and price discovery can occur with less complexity.</p>
+
+<figure class="caption">
+    <img src="/images/posts/dex-big-picture.png" alt="The Big Picture" />
+    
+</figure>
+
+<h2>The Big Picture</h2>
+
+<p>Much of this proposal has been about the practical considerations of how an ideal DEX should operate and how that can be achieved using existing cryptocurrency infrastructure.  Taking a step back, what is being proposed here is a multiplexing infrastructure for cryptocurrency exchange.  In the same way that telephone and networking switches multiplex electromagnetic communications, cryptocurrencies and their exchange multiplex the storage, transmission and exchange of value.  The Lightning Network daemon, <a href="https://github.com/LightningNetwork/lnd">lnd</a>, is an excellent example of a permissionless, neutral, non-custodial, smart contract multiplexer, similar to our proposed DEX.  While the DEX will operate on-chain and between cryptocurrencies, lnd operates off-chain and for a given cryptocurrency.</p>
+
+<p>Existing DEX projects have the aim of making such a protocol “fat”, using it as a means to monetize their services, whereas what we are proposing is to intentionally make the protocol “thin”.  By making the protocol thin and removing the incentives to centralize, our goal is to provide long term value by bringing added stability to the cryptocurrency exchange markets.  Putting all cryptocurrencies on a more equal footing in the context of exchange will ease the process of acquiring cryptocurrencies, which will benefit the overall ecosystem.</p>
+
+<h2>Conclusion</h2>
+
+<p>Having the ability to exchange cryptocurrencies with minimal friction, risk and centralization is important to the process of cryptocurrency adoption by the wider public.  Implementing the DEX as described above will:</p>
+
+<ul>
+  <li>make the exchange process permissionless for both projects and users</li>
+  <li>remove gatekeepers, barriers to entry, and most fees</li>
+  <li>be more censorship resistant than an intermediate chain or token</li>
+  <li>reduce the influence of HFTs on the price discovery process</li>
+  <li>protect the cryptocurrency ecosystem liquidity from predation</li>
+  <li>prevent or filter wash trading, creating verifiable volume</li>
+  <li>facilitate decentralized regulation of trading</li>
+</ul>
+
+<p>This preliminary proposal is being made on the Decred Blog since it is relevant for Decred and the wider cryptocurrency community.  Once our own proposal platform, <a href="https://blog.decred.org/2017/10/25/Politeia/">Politeia</a>, is running on mainnet, this proposal will be submitted there, with the goal of finding developers and funding for this project.  We estimate the DEX can be built for USD 1-5M in 6-18 months, depending on the developers who are interested.  If other cryptocurrency projects are interested in collaborating with us to build the DEX, we are totally open to it, feel free to drop by <a href="https://slack.decred.org">our Slack</a> and join channel #thedex.</p>
+
+                </div><!-- .entry-content -->
+                <footer class="entry-footer">
+                    <div class="share-post">
+                        <span>Share</span>
+                        <a class="fa-twitter" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text=A%20New%20Kind%20of%20DEX&amp;url=https://blog.decred.org/2018/06/05/A-New-Kind-of-DEX/"><span class="screen-reader-text">Twitter</span></a>
+                        <a class="fa-facebook" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.decred.org/2018/06/05/A-New-Kind-of-DEX/&amp;t=A%20New%20Kind%20of%20DEX"><span class="screen-reader-text">Facebook</span></a>
+                        <a class="fa-google-plus" target="_blank" rel="noopener noreferrer" href="http://plus.google.com/share?url=https://blog.decred.org/2018/06/05/A-New-Kind-of-DEX/"><span class="screen-reader-text">Google+</span></a>
+                    </div><!-- .share-post -->
+                    
+                    <div class="tag-links">
+                        Tags: <a href="/tags/index.html#Decred" title="Pages tagged Decred" rel="tag">Decred</a><a href="/tags/index.html#decentralized+exchange" title="Pages tagged decentralized exchange" rel="tag">decentralized exchange</a><a href="/tags/index.html#DEX" title="Pages tagged DEX" rel="tag">DEX</a><a href="/tags/index.html#atomic+swap" title="Pages tagged atomic swap" rel="tag">atomic swap</a><a href="/tags/index.html#decentralized+regulation" title="Pages tagged decentralized regulation" rel="tag">decentralized regulation</a><a href="/tags/index.html#verifiable+volume" title="Pages tagged verifiable volume" rel="tag">verifiable volume</a>
+                    </div>
+                    
+                </footer><!-- .entry-footer -->
+            </article><!-- .post -->
+            <div class="author-box">
+                <div class="author-info">
+                    <div class="author-avatar" style="background-image: url(/images/jy-p_300x300.png)"><span class="screen-reader-text">Jake Yocom-Piatt's Picture</span></div>
+                    <div class="author-details">
+                        <h2 class="author-title">About Jake Yocom-Piatt</h2>
+                        <p class="author-bio">Decred Project Lead</p>
+                        <span class="author-location"><i class="fa-map-marker" aria-hidden="true"></i> Chicago, US</span>
+                        <span class="author-website"><i class="fa-chain" aria-hidden="true"></i> <a href="https://twitter.com/decredproject" target="_blank" rel="noopener noreferrer"> https://twitter.com/decredproject</a></span>
+                    </div><!-- .author-details -->
+                </div><!-- .author-info -->
+            </div><!-- .author-box -->
+            <nav class="post-navigation">
+                <h2 class="screen-reader-text">Post navigation</h2>
+                
+                <div class="nav-previous">
+                    <div class="nav-inside">
+                        
+                        <a href="/2018/02/28/2018-Decred-Roadmap/" class="nav-thumb" style="background-image: url(/images/posts/2018_decred_roadmap.png)"></a>
+                        
+                        <div class="nav-before">Previous</div>
+                        <div class="nav-title"><a href="/2018/02/28/2018-Decred-Roadmap/">2018 Decred Roadmap</a></div>
+                        <div class="nav-date">February 28, 2018</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-previous -->
+                
+                
+                <div class="nav-next">
+                    <div class="nav-inside">
+                        
+                        <a href="/2018/10/15/Politeia-in-Production/" class="nav-thumb" style="background-image: url(/images/posts/politeia-in-production.png)"></a>
+                        
+                        <div class="nav-before">Next</div>
+                        <div class="nav-title"><a href="/2018/10/15/Politeia-in-Production/">Politeia in Production</a></div>
+                        <div class="nav-date">October 15, 2018</div>
+                    </div><!-- .nav-inside -->
+                </div><!-- .nav-next -->
+                
+            </nav><!-- .post-navigation -->
+            
+        </main><!-- .site-main -->
+        <aside class="sidebar">
+
+    
+    <section class="widget widget-text">
+        <h2 class="widget-title">About Jake Yocom-Piatt</h2>
+        <p>Decred Project Lead</p>
+    </section><!-- .widget-text -->
+    
+
+    
+
+    <section class="widget widget-recent-posts">
+        <h2 class="widget-title">Latest Posts</h2>
+        <ul class="recent-posts">
+            
+            <li class="recent-item"><a href="/2019/08/28/Iterating-Privacy/">Iterating Privacy</a> <span>August 28, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2019/08/21/Surveying-the-Privacy-Landscape/">Surveying the Privacy Landscape</a> <span>August 21, 2019</span></li>
+            
+            <li class="recent-item"><a href="/2018/10/15/Politeia-in-Production/">Politeia in Production</a> <span>October 15, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/06/05/A-New-Kind-of-DEX/">A New Kind of DEX</a> <span>June 5, 2018</span></li>
+            
+            <li class="recent-item"><a href="/2018/02/28/2018-Decred-Roadmap/">2018 Decred Roadmap</a> <span>February 28, 2018</span></li>
+            
+        </ul><!-- .recent-posts -->
+    </section><!-- .widget-recent-posts -->
+
+    <!--Create a sorted array of tags-->
+    
+    
+    <section class="widget widget-tags">
+        <h2 class="widget-title">Tags</h2>
+        <div class="tagcloud">
+            
+            <a href="/tags/#Bitcoin">Bitcoin</a>
+            
+            <a href="/tags/#CoinShuffle%2B%2B">CoinShuffle++</a>
+            
+            <a href="/tags/#Confidential+Transactions">Confidential Transactions</a>
+            
+            <a href="/tags/#DAE">DAE</a>
+            
+            <a href="/tags/#DAO">DAO</a>
+            
+            <a href="/tags/#DEX">DEX</a>
+            
+            <a href="/tags/#Decred">Decred</a>
+            
+            <a href="/tags/#DiceMix">DiceMix</a>
+            
+            <a href="/tags/#LN">LN</a>
+            
+            <a href="/tags/#Lightning+Network">Lightning Network</a>
+            
+            <a href="/tags/#Litecoin">Litecoin</a>
+            
+            <a href="/tags/#OTC">OTC</a>
+            
+            <a href="/tags/#Politeia">Politeia</a>
+            
+            <a href="/tags/#Proof-of-Stake">Proof-of-Stake</a>
+            
+            <a href="/tags/#Proposal+System">Proposal System</a>
+            
+            <a href="/tags/#RFP">RFP</a>
+            
+            <a href="/tags/#SPV">SPV</a>
+            
+            <a href="/tags/#Stake+Difficulty">Stake Difficulty</a>
+            
+            <a href="/tags/#Ticket+Price">Ticket Price</a>
+            
+            <a href="/tags/#Treasury">Treasury</a>
+            
+            <a href="/tags/#atomic+swap">atomic swap</a>
+            
+            <a href="/tags/#best-practices">best-practices</a>
+            
+            <a href="/tags/#blockchain+anchor">blockchain anchor</a>
+            
+            <a href="/tags/#challenge">challenge</a>
+            
+            <a href="/tags/#consensus">consensus</a>
+            
+            <a href="/tags/#contractors">contractors</a>
+            
+            <a href="/tags/#cryptocurrency">cryptocurrency</a>
+            
+            <a href="/tags/#database">database</a>
+            
+            <a href="/tags/#dcrd">dcrd</a>
+            
+            <a href="/tags/#dcrtime">dcrtime</a>
+            
+            <a href="/tags/#dcrwallet">dcrwallet</a>
+            
+            <a href="/tags/#decentralized+exchange">decentralized exchange</a>
+            
+            <a href="/tags/#decentralized+regulation">decentralized regulation</a>
+            
+            <a href="/tags/#developers">developers</a>
+            
+            <a href="/tags/#exchange">exchange</a>
+            
+            <a href="/tags/#gominer">gominer</a>
+            
+            <a href="/tags/#governance">governance</a>
+            
+            <a href="/tags/#hard+fork">hard fork</a>
+            
+            <a href="/tags/#hard+fork+voting">hard fork voting</a>
+            
+            <a href="/tags/#instant+messaging">instant messaging</a>
+            
+            <a href="/tags/#integration">integration</a>
+            
+            <a href="/tags/#lnd">lnd</a>
+            
+            <a href="/tags/#meltdown">meltdown</a>
+            
+            <a href="/tags/#payment">payment</a>
+            
+            <a href="/tags/#paymetheus">paymetheus</a>
+            
+            <a href="/tags/#post-quantum">post-quantum</a>
+            
+            <a href="/tags/#privacy">privacy</a>
+            
+            <a href="/tags/#proposal+system">proposal system</a>
+            
+            <a href="/tags/#researchers">researchers</a>
+            
+            <a href="/tags/#roadmap">roadmap</a>
+            
+            <a href="/tags/#secure+communications">secure communications</a>
+            
+            <a href="/tags/#security">security</a>
+            
+            <a href="/tags/#smart+contracts">smart contracts</a>
+            
+            <a href="/tags/#soft+fork">soft fork</a>
+            
+            <a href="/tags/#spectre">spectre</a>
+            
+            <a href="/tags/#support">support</a>
+            
+            <a href="/tags/#timestamped+filesystem">timestamped filesystem</a>
+            
+            <a href="/tags/#verifiable+volume">verifiable volume</a>
+            
+            <a href="/tags/#zkc">zkc</a>
+            
+        </div><!-- .tagcloud -->
+    </section><!-- .widget -->
+
+</aside><!-- .sidebar -->
+
+    </div><!-- .inner -->
+</div><!-- .site-content -->
+
+    <footer class="site-footer">
+    <div class="inner">
+        <div class="social-links">
+            
+            <a href="https://twitter.com/decredproject" class="fa-twitter square fill-horizontal"><span class="screen-reader-text">Twitter</span></a>
+            
+            
+            
+            
+            <a href="https://github.com/decred" class="fa-github-alt square fill-horizontal"><span class="screen-reader-text">GitHub</span></a>
+            
+            
+            
+            
+            
+            
+            
+            <a class="fa-feed square fill-horizontal" href="/feed.xml"><span class="screen-reader-text">RSS</span></a>
+        </div><!-- .social-links -->
+        <div class="site-info">
+            &copy; <a href="/">Decred Blog</a> all rights reserved. <br />
+            <a href="#top" id="top-link" class="fa-chevron-up top-link square fill-horizontal"><span class="screen-reader-text">Back to the top</span></a>
+        </div><!-- .site-info -->
+    </div><!-- .inner -->
+</footer><!-- .site-footer -->
+
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/plugins.js"></script>
+    <script type="text/javascript" src="/js/custom.js"></script>
+</body>
+</html>
