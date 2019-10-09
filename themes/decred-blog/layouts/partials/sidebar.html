@@ -1,0 +1,22 @@
+<aside class="sidebar">
+ 
+  {{ if (isset .Params "authors") }}
+    {{ .Render "author-about" }}
+  {{ end }}
+
+  {{ if .IsHome }}
+      {{ partialCached "recent.html" .}}
+  {{ end }}
+  
+  {{ with .Site.Menus.sidebar }}
+  <section class="sidebar-module">
+    <h4>Links</h4>
+    <ol class="list-unstyled">
+      {{ range . }}
+      <li><a href="{{ .URL | absURL }}">{{ .Name }}</a></li>
+      {{ end }}
+    </ol>
+  </section>
+  {{ end }}
+</aside><!-- /.blog-sidebar -->
+

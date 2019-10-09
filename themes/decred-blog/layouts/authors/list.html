@@ -1,0 +1,10 @@
+{{ define "main" }}
+
+
+<h2 style="color:#ffffff;">Posts by {{ .Params.name }}</h2>
+
+{{ range .Data.Pages }}
+  {{ .Render "article" }}
+{{ end }}
+
+{{ end }}

@@ -1,0 +1,6 @@
+{{ define "main" }}
+  <h1 style="color:#ffffff;">Authors</h1>
+  {{ range .Data.Pages }}
+    {{ partial "author-box" . }}
+  {{ end }}
+{{ end }}

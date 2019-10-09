@@ -1,0 +1,11 @@
+{{ $dateFormat := default "Mon Jan 2, 2006" (index .Site.Params "date_format") }}
+
+<section class="widget widget-recent-posts">
+    <h2 class="widget-title">Latest Posts</h2>
+    <ul class="recent-posts">
+        {{ $num_recent_posts := (index .Site.Params.sidebar "num_recent_posts" | default 5) }}
+        {{ range first $num_recent_posts (where .Site.RegularPages "Section" "in" .Site.Params.mainSections) }}
+            <li class="recent-item"><a href="{{.RelPermalink}}">{{.Title | markdownify }}</a> <span>{{ .Date.Format $dateFormat }}</span></li>
+        {{ end }}
+    </ul><!-- .recent-posts -->
+</section>
