@@ -353,6 +353,12 @@
     color: $white;
 }
 
+figure.legendfigure figcaption h4 {
+    margin-top: 5px;
+    font-style: italic;
+    font-size: 80%;
+}
+
 /* Author box */
 .author-box {
     background-color: $white;
