@@ -353,6 +353,21 @@
     color: $white;
 }
 
+figure.legendfigure figcaption h4 {
+    margin-top: 5px;
+    font-style: italic;
+    font-size: 80%;
+}
+
+.footnote-content {
+    padding: 0px 1.5em;
+
+    .footnote-content-id {
+        float: left;
+        margin-left: -1.5em;
+    }
+} 
+
 /* Author box */
 .author-box {
     background-color: $white;
