@@ -359,6 +359,15 @@ figure.legendfigure figcaption h4 {
     font-size: 80%;
 }
 
+.footnote-content {
+    padding: 0px 1.5em;
+
+    .footnote-content-id {
+        float: left;
+        margin-left: -1.5em;
+    }
+} 
+
 /* Author box */
 .author-box {
     background-color: $white;
