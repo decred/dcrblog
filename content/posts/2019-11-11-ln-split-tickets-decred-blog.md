@@ -1,6 +1,6 @@
 ---
 title:                  "LN & Multi-Owner Tickets"
-date:                   2019-11-07
+date:                   2019-11-11
 authors:
 -  matheusd
 tags:			[Decred,lightning-network,split-tickets,multiowner-tickets]
