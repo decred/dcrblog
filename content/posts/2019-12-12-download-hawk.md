@@ -29,7 +29,7 @@ I wanted to build a simple tool that would alert users if any of the binaries or
 ## It can handle two types of links. 
 
 
-### 1. External Link (Playstore, Itunes, 3rd party wallets)
+### 1. External Link (Play Store, iTunes, 3rd party wallets)
 
 - Checks if the link is present
 - Checks if the URL matches with the defined link
@@ -43,7 +43,7 @@ I wanted to build a simple tool that would alert users if any of the binaries or
 
 All of this can be configured from a single [edit](https://github.com/degeri/DownloadHawk#how-to-edit-the-configini-file) of a [config.ini](https://github.com/degeri/DownloadHawk/blob/master/config.ini) file. 
 
-If any anomaly is found it gives an alert. This currently sends a message on [matrix](https://matrix.org/) but can easily be [edited](https://github.com/degeri/DownloadHawk/blob/master/functions.py#L126) send alerts to a platform of your choice.
+If any anomaly is found it gives an alert. This currently sends a message on [matrix](https://matrix.org/) but can easily be [edited](https://github.com/degeri/DownloadHawk/blob/master/functions.py#L126) to send alerts to a platform of your choice.
 
 
 # Does this mean its 100% secure? Why release it? 
