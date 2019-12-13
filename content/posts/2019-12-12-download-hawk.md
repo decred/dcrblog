@@ -7,7 +7,7 @@ tags: [Decred,security,binary verification]
 banner_image: "/images/posts/download_hawk_1.png"
 ---
 
-We recently observed the Monero hack in which an attacker compromised getmonero[.]org and replaced one of the binaries with a malicious coinstealer. 
+We recently observed the Monero hack in which an attacker compromised [getmonero[.]org](https://www.zdnet.com/article/official-monero-website-compromised-with-malware-that-steals-funds/) and replaced one of the binaries with a malicious coinstealer. 
 
 The Monero team has good reliability when it comes to security and all indicators seem to show that the attack was sophisticated. Point being no matter what your security posture, this could happen to anyone.
 
@@ -16,7 +16,7 @@ The Monero team has good reliability when it comes to security and all indicator
 
 ## How should everyone protect themselves? 
 
-In a perfect world, every user would be checking the hash for each download. They would also be making sure that the hashes are signed by a reputed source. And this all should be done Out-of-band. But sadly, we do not live in a perfect world and a small fraction of downloads are checked properly by users. 
+In a perfect world, every user would be checking the hash for each download. They would also be making sure that the hashes are signed by a reputable source. And this all should be done Out-of-band. But sadly, we do not live in a perfect world and a small fraction of downloads are checked properly by users. 
 
 On the project front, Decred is working towards reproducible builds for all binaries. This will allow community members to verify that the files being given for download match with the actual source code.
 
@@ -48,7 +48,7 @@ If any anomaly is found it gives an alert. This currently sends a message on [Ma
 
 ## Does this mean its 100% secure? Why release it? 
 
-No! This might be bypassed by someone with enough resources or skills. Proper security is layered. While having this private might be beneficial for Decred, we felt it was in the greater interest of the cryptocurrency community to have this out in the public. It also allows for new ideas and [improvements](https://github.com/degeri/DownloadHawk/issues).
+No! This might be bypassed by someone with enough resources or skills. Proper security is layered. While keeping this private might be beneficial for Decred, we felt it was in the greater interest of the cryptocurrency community to make this publicly available. It also allows for new ideas and [improvements](https://github.com/degeri/DownloadHawk/issues).
 
 
 ## Conclusion
