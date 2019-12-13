@@ -14,27 +14,27 @@ The Monero team has good reliability when it comes to security and all indicator
 
 <!--more-->
 
-# How should everyone protect themselves? 
+## How should everyone protect themselves? 
 
 In a perfect world, every user would be checking the hash for each download. They would also be making sure that the hashes are signed by a reputed source. And this all should be done Out-of-band. But sadly, we do not live in a perfect world and a small fraction of downloads are checked properly by users. 
 
 On the project front, Decred is working towards reproducible builds for all binaries. This will allow community members to verify that the files being given for download match with the actual source code.
 
-# What is DownloadHawk?
+## What is DownloadHawk?
 
 I wanted to build a simple tool that would alert users if any of the binaries or the links in the download page changed. 
 
-[DownloadHawk](https://github.com/degeri/DownloadHawk) makes use of [selenium](https://selenium.dev/) to visit the website like an actual user. Then it proceeds to do a series of checks on the rendered HTML. 
+[DownloadHawk](https://github.com/degeri/DownloadHawk) makes use of [Selenium](https://selenium.dev/) to visit the website like an actual user. Then it proceeds to do a series of checks on the rendered HTML. 
 
-## It can handle two types of links. 
+### It can handle two types of links. 
 
 
-### 1. External Link (Play Store, iTunes, 3rd party wallets)
+#### 1. External Link (Play Store, iTunes, 3rd party wallets)
 
 - Checks if the link is present
 - Checks if the URL matches with the defined link
 
-### 2. File download 
+#### 2. File download 
 
 - Checks if the link is present
 - Checks if the URL matches the defined link
@@ -43,15 +43,15 @@ I wanted to build a simple tool that would alert users if any of the binaries or
 
 All of this can be configured from a single [edit](https://github.com/degeri/DownloadHawk#how-to-edit-the-configini-file) of a [config.ini](https://github.com/degeri/DownloadHawk/blob/master/config.ini) file. 
 
-If any anomaly is found it gives an alert. This currently sends a message on [matrix](https://matrix.org/) but can easily be [edited](https://github.com/degeri/DownloadHawk/blob/master/functions.py#L126) to send alerts to a platform of your choice.
+If any anomaly is found it gives an alert. This currently sends a message on [Matrix](https://matrix.org/) but can easily be [edited](https://github.com/degeri/DownloadHawk/blob/master/functions.py#L126) to send alerts to a platform of your choice.
 
 
-# Does this mean its 100% secure? Why release it? 
+## Does this mean its 100% secure? Why release it? 
 
 No! This might be bypassed by someone with enough resources or skills. Proper security is layered. While having this private might be beneficial for Decred, we felt it was in the greater interest of the cryptocurrency community to have this out in the public. It also allows for new ideas and [improvements](https://github.com/degeri/DownloadHawk/issues).
 
 
-# Conclusion
+## Conclusion
 
 The [README](https://github.com/degeri/DownloadHawk/blob/master/README.md) should contain all the information to get started. It should be very simple to edit and set up for your site. Please note depending on the size of the download files and the frequency of checks it might consume a lot of bandwidth. You can always reach out to me on twitter or matrix if you face any issues or want to help with improvements.
 
