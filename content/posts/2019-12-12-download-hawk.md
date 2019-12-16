@@ -1,6 +1,6 @@
 ---
 title: "Introducing DownloadHawk"
-date: 2019-12-12
+date: 2019-12-16
 authors:
 - degeri
 tags: [Decred,security,binary verification]
