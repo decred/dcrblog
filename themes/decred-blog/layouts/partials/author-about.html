@@ -5,5 +5,5 @@
         <br />
         {{ .Params.location}}
     </p>
-    <img style="border-radius: 50%; height: 100px;" src="{{ .Params.image }}" />
+    <img style="border-radius: 50%; height: 100px;" src="{{ .Site.BaseURL }}{{ .Params.image }}" />
 </section>

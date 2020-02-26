@@ -4,7 +4,7 @@
             <span class="screen-reader-text">{{ .Params.name }}'s Picture</span>
         </div>
         <div class="author-details">
-            <h2 class="author-title">About <a href="/authors/{{ .Params.id }}">{{ .Params.Name }}</a></h2>
+            <h2 class="author-title">About <a href="{{ .Site.BaseURL }}/authors/{{ .Params.id }}">{{ .Params.Name }}</a></h2>
             <p class="author-bio">{{ .Params.bio }}</p>
             <span class="author-location"><i class="fa-map-marker" aria-hidden="true"></i> {{ .Params.location }}</span>
             <span class="author-website"><i class="fa-chain" aria-hidden="true"></i> <a href="https://twitter.com/{{ .Params.twitter }}" target="_blank" rel="noopener noreferrer"> https://twitter.com/{{ .Params.twitter }}</a></span>

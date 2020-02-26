@@ -5,7 +5,7 @@
         <div class="entry-header-wrap">
             
             <a href="{{ .Permalink }}" class="post-thumbnail">
-                <img src="{{ .Params.banner_image }}" alt="{{ .Title | markdownify }} ">
+                <img src="{{ .Site.BaseURL }}{{ .Params.banner_image }}" alt="{{ .Title | markdownify }} ">
             </a>
             
             <h2 class="entry-title"><a href="{{ .Permalink }}" rel="bookmark" title="Permanent Link to {{ .Permalink }}">{{ .Title | markdownify }}</a></h2>
