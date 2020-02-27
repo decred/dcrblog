@@ -9,7 +9,7 @@
       <div class="entry-header-wrap">
           
           <div class="post-thumbnail">
-              <img src="{{ .Params.banner_image }}" alt="{{ .Title | markdownify }}">
+              <img src="{{ .Site.BaseURL }}{{ .Params.banner_image }}" alt="{{ .Title | markdownify }}">
           </div><!-- .post-thumbnail -->
           
           <h1 class="entry-title">{{ .Title | markdownify }}</h1>

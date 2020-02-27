@@ -12,8 +12,8 @@
     {{ $style := resources.Get "sass/main.scss" | toCSS }}
     <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
-    <link rel="stylesheet" href="/css/SourceSansPro.css">
-    <link rel="stylesheet" href="/css/font-awesome-4.7.0.min.css">
+    <link rel="stylesheet" href="{{ .Site.BaseURL }}/css/SourceSansPro.css">
+    <link rel="stylesheet" href="{{ .Site.BaseURL }}/css/font-awesome-4.7.0.min.css">
 
     {{ "<!-- RSS 2.0 feed -->" | safeHTML }}
     {{ with .OutputFormats.Get "rss" -}}
@@ -30,7 +30,7 @@
           <div class="nav-menu">
             <ul class="menu">
               <li class="{{ if .IsHome }}nav-current{{ end }}">
-                <a class="nav-link {{ if .IsHome }}nav-current{{ end }}" href="/">Home</a>
+                <a class="nav-link {{ if .IsHome }}nav-current{{ end }}" href="{{ .Site.BaseURL }}">Home</a>
               </li>
               {{- $currentPage := . -}}
               {{ range .Site.Menus.navbar }}
@@ -49,8 +49,8 @@
     <header class="site-header">
         <div class="inner">
 	        <h1 class="site-title">
-            <a class="logo-text" href="/">
-              <img class="logo-art" src="/images/banner.png" alt="Decred Blog">
+            <a class="logo-text" href="{{ .Site.BaseURL }}">
+              <img class="logo-art" src="{{ .Site.BaseURL }}/images/banner.png" alt="Decred Blog">
             </a>
           </h1>
         </div><!-- .inner -->
