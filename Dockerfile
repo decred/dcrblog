@@ -1,7 +1,7 @@
 # builder image
 FROM golang:1.13
 
-ENV HUGO_VERSION 0.58.3
+ENV HUGO_VERSION 0.64.1
 
 LABEL description="gohugo build"
 LABEL version="1.0"
