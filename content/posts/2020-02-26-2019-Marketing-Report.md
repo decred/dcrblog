@@ -24,7 +24,7 @@ Total marketing spend for Decred in 2019 was 785K USD, similar to 2018.
 #### Positives
 + The majority of 2019 marketing expenditures were directly approved by stakeholders.
 + Decred successfully aligned on messaging, cultivated and trained spokespeople, and raised awareness in 2019 within the crypto community.
-+ Decred experimented with competitive pitch / hired Ditto PR (highly engaged Politea proposal).
++ Decred experimented with competitive pitch / hired Ditto PR (highly engaged Politeia proposal).
 + Decred successfully generated excitement around the Decentralized Exchange (DEX), launched Privacy, and entered conversations on governance, staking, DAOs, privacy, Lightning Network, DEX, and new ways to organize work.
 + Decred generated high quality research in the public interest.
 
@@ -42,7 +42,7 @@ Total marketing spend for Decred in 2019 was 785K USD, similar to 2018.
 + Only time, experimentation, and the collective intelligence of the community’s efforts, will determine exactly what Decred means and represents.
 
 #### The journey to date
-In 2015, a group of Bitcoin developers splintered off to create a new coin, Decred, to build upon Bitcoin’s social contract. Decred’s design system set out to evolve Bitcoin and solve three key issues in the crypto space: Security, Adaptability and Sustainability.
+In early 2014, a group of Bitcoin developers splintered off to create a new coin, Decred, to build upon Bitcoin’s social contract. Decred’s design system set out to evolve Bitcoin and solve three key issues in the crypto space: Security, Adaptability and Sustainability.
 
 The solution employed a hybrid consensus system to make Decred more secure and enable a digital collective where decred holders could opt-in to formally control the direction of the project, both on-chain and through project level budgeting on Politeia.
 
@@ -72,6 +72,7 @@ Every community member and contractor has their own story; many mirror the desir
 Decred is becoming increasingly decentralized, and the tools of Politeia and CMS allow it to increasingly operate as a [headless brand](https://otherinter.net/web3/headless-brands/), where central planning goes out the door and the community of users define the organism in a permissionless manner. Bitcoin did this first, and Decred needs to, once again, iterate Bitcoin. Anyone who cares about Decred should care enough to spend the time to understand its history and actively participate in determining what it becomes and how that is communicated.
 
 {{< figure src="/images/posts/flockofbirds.png" alt="Flock of Birds" >}}  
+
 
 In 2019, I proposed and passed two proposals on Politeia in an attempt to make much of the existing project spending transparent and formally approved via the stakeholders. For reference, here are the [Marketing](https://proposals.decred.org/proposals/c84a76685e4437a15760033725044a15ad832f68f9d123eb837337060a09f86e) and [Events](https://proposals.decred.org/proposals/d3e7f159b9680c059a3d4b398de2c8f6627108f28b7d61a3f10397acb4b5e509) proposals, which summed to a budget of 490K USD. The following report represents all spending within the domain, including that which falls under those proposals.
 
@@ -154,13 +155,13 @@ What we learned:
 ### Decred Assembly
 Decred Assembly rebooted in 2019 featuring Dustin LeFebvre and Jake Yocom-Piatt as co-hosts. After initial format tinkering, it returned to the original “Deep Dive” format to showcase developers discussing their work and new releases. Episodes can be found [here](https://www.youtube.com/playlist?list=PLaMrpvQ0yJ_z8ZtvgBqinmL74_0W7prv2), and include:
 
-May, 2019 DA: Distributed - w/Elian Huesca, MX & LA Community Manager  
-June, 2019 DEX w/Jake Yocom-Piatt  
-June, 2019 Africa w/Akin Sawyerr  
-September, 2019 Decentralizing the Treasury w/Marco Peereboom  
-October, 2019 Decred Privacy w/Josh Rickmar  
-November, 2019 1.5rc1 w/Dave Collins  
-December, 2019 Lightning Network w/Matheus Degiovani  
+May, 2019 DA: Distributed with Elian Huesca, MX & LA Community Manager  
+June, 2019 DEX with Jake Yocom-Piatt  
+June, 2019 Africa with Akin Sawyerr  
+September, 2019 Decentralizing the Treasury with Marco Peereboom  
+October, 2019 Decred Privacy with Josh Rickmar  
+November, 2019 1.5rc1 with Dave Collins  
+December, 2019 Lightning Network with Matheus Degiovani  
 
 What we learned:
 + The Deep Dive format enables developers to discuss new features in depth and with nuance, helping to support software releases.
@@ -169,7 +170,7 @@ What we learned:
 + These long form videos can be edited into smaller snippets for additional social media use and reach.
 
 ### Newsletter
-The project determined [phplist](https://www.phplist.org/) to be the best open-source program, so a template was skinned by design and multiple test emails were sent. The project will only send communications to those who have opted into receiving them, and the sign-up link will be included in the updated website. As such, outgoing newsletters will commence in 2020, pending approval of the stakeholders of the next proposal.
+The project determined [phplist](https://www.phplist.org/) to be the best open-source program, so a template was skinned by design and multiple test emails were sent. The newsletter did not commence because of delays with updating the website. As such, outgoing newsletters will commence in 2020, pending approval of the stakeholders of the next proposal.
 
 What we learned:
 + The newsletter would have commenced far more quickly had GitHub been used to create an issue.
@@ -288,7 +289,7 @@ When the Marketing and Events Proposals were made last year, the hope was that t
 
 However, the amount of participation under that umbrella fell short of expectations.  In short, the blanket proposal involves responsibility without authority. No one is going to make someone speak about subject X at event Y, respond to a message, or do something they don’t want to do.
 
-Additionally, the proposal ownership created a dynamic that was undesirable and counter to the spirit of decentralized decision-making. Perhaps people looked to the proposal owner to centrally execute the plan and make decisions. This is impossible to do on a global scale, as no one has that degree of knowledge or band width, nor is it in line with community values. As such, the scope of proposals for 2020 and beyond is best limited to the things one can directly execute, plus the components trustworthy contractors have asked to be included on their behalf.
+Additionally, the proposal ownership created a dynamic that was undesirable and counter to the spirit of decentralized decision-making. Perhaps people looked to the proposal owner to centrally execute the plan and make decisions. This is impossible to do on a global scale, as no one has that degree of knowledge or bandwidth, nor is it in line with community values. As such, the scope of proposals for 2020 and beyond is best limited to the things one can directly execute, plus the components trustworthy contractors have asked to be included on their behalf.
 
 One of the major differences from 2019 to 2020 will be the treatment of Community Organizers. Geographic leads should make individual proposals for their given regions because they are more in tune with markets, they can better lead on the local level, and they will be directly responsible to the stakeholders that approved their work. Elian has already passed his proposal for Mexico and Latin America, and additional Politeia proposals are in the works for at least four other geographic areas. This will make the community more nimble and resilient.
 
@@ -312,7 +313,7 @@ Remember, Decred is not currently one of the top 5 coins today by market capital
 Educational awareness goes far beyond technical details and product features. The larger, and frequently overlooked question, is what does this digital collective become, what does it produce, what movements does it spawn, and how do we get there?
 
 #### Using sustainable funding to the public’s benefit.
-Obviously, a cryptocurrency with various features is part of that, but the larger idea is the culture that takes shape and what can be imagined and achieved by a decentralized community with sustainable funding that seeks to create ideas for the public benefit, per the Decred Constitution?
+Obviously, a cryptocurrency with various features is a critical technical component. The larger questions are what culture takes shape and what can be imagined and achieved by a decentralized community with sustainable funding that seeks to create ideas for the public benefit?
 
 Decred has developed tools for atomic swaps, privacy technology, is working on a DEX, and all of its code is open-source for the world to learn from and build on.
 
@@ -335,7 +336,7 @@ Decred was designed intelligently to align interests and make it more secure, ad
 Anyhow, these traits lack sex appeal, involve nuance and explanation, and only prove themselves over the long run. Their success will be as the result of other activities that make these memes believable.
 
 #### The right memes.
-The Decred community needs to find better memes about what these traits enable. What will be built over the next hundred years, how will DAO’s transform the ability to organize around ideas and shift global centers of power? What Oracles can be removed, and what does that empower? How can this movement change people’s lives and make the world fairer and more verdant? When sustainable funding is no longer beholden to venture capitalists, foundations, or benevolent donors, what does that enable? What can be created or advanced?
+The Decred community needs to find better memes about what these traits enable. What will be built over the next hundred years, how will DAOs transform the ability to organize around ideas and shift global centers of power? What Oracles can be removed, and what does that empower? How can this movement change people’s lives and make the world fairer and more verdant? When sustainable funding is no longer beholden to venture capitalists, foundations, or benevolent donors, what does that enable? What can be created or advanced?
 
 The answers to these questions define the new memes that must be identified, iterated, and employed. And they must be reductive to simply and quickly appeal to people who want to help define and grow the community. Find the memes that resonate and mercifully pound on them. Do this. Repeat.
 
@@ -366,7 +367,7 @@ While crypto efforts must be continued, the Decred community must look beyond cr
 This could be a local meetup that curates different advocates for privacy, or a group of activist citizens frustrated with the current state of their political system, looking for ideas to change the world. The community must take initiative and reach out to broaden its ecosystem.
 
 #### What topics matter to Community Members?
-What are the big ideas that knit the community together and motivate action? Decred should be actively involved in any conversation that involves governance, decentralized organizations, privacy, privacy as a human right, a new way to organize globally around ideas, working for the blockchain, a new way to fund work and what different ideas can be funded, individual sovereignty, the hive mind, Lightning Network, staking, blockchain security/hybrid consensus system, DAO’s, decentralized exchanges and why they’re important. Get involved and make sure Decred is part of the right conversations.
+What are the big ideas that knit the community together and motivate action? Decred should be actively involved in any conversation that involves governance, decentralized organizations, privacy, privacy as a human right, a new way to organize globally around ideas, working for the blockchain, a new way to fund work and what different ideas can be funded, individual sovereignty, the hive mind, Lightning Network, staking, blockchain security/hybrid consensus system, DAOs, decentralized exchanges and why they’re important. Get involved and make sure Decred is part of the right conversations.
 
 What are the adjacent areas of interest that the community cares about or that might benefit from connection to the tools the system offers? Broaden horizons and break the crypto bubble.
 
