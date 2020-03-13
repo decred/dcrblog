@@ -120,7 +120,7 @@ While what Decred needs as an organization may not line up with precisely what p
 
 #### Wallet support
 
-+ support users of various wallets in Slack #support channel
++ support users of various wallets in the #support:decred.org channel on Matrix.
 
 #### Payment processor and exchange integration
 
@@ -129,4 +129,4 @@ While what Decred needs as an organization may not line up with precisely what p
 
 ### Conclusion
 
-We are excited to expand Decred's pool of contractors and continue to build out our system of decentralized governance.  We encourage interested parties to reach out on [Slack](https://decred.slack.com/) (sign up for our Slack [here](https://slack.decred.org)), [Reddit](https://reddit.com/r/decred) or [the Decred Forum](https://forum.decred.org) to inquire further.  If you would like to make a comment, please do so on [the comment thread on the forum](https://forum.decred.org/threads/decred-recruiting.5478/).
+We are excited to expand Decred's pool of contractors and continue to build out our system of decentralized governance.  We encourage interested parties to reach out on [Matrix](https://decred.org/matrix/) or [Reddit](https://reddit.com/r/decred) to inquire further.
