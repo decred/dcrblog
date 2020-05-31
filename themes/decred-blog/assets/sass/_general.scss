@@ -295,6 +295,7 @@ a img {
     -webkit-transition: opacity 0.3s;
     -moz-transition:    opacity 0.3s;
     transition:         opacity 0.3s;
+    outline:            1px solid transparent;
 }
 
 a:hover img {
