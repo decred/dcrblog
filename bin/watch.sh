@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-hugo server -D --disableFastRender -b http://localhost:1313
+hugo server -F -D --disableFastRender -b http://localhost:1313
