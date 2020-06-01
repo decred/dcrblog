@@ -1,7 +1,7 @@
 # builder image
 FROM alpine:latest
 
-ENV HUGO_VERSION 0.66.0
+ENV HUGO_VERSION 0.71.1
 
 LABEL description="gohugo build"
 LABEL version="1.0"
@@ -21,7 +21,7 @@ COPY . /root/
 RUN hugo
 
 # Serve image (stable nginx version)
-FROM nginx:1.16
+FROM nginx:1.18
 
 LABEL description="dcrblog server"
 LABEL version="1.0"

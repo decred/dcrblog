@@ -124,7 +124,6 @@ pre:before {
 blockquote {
     border-left: 3px solid lighten( $picton-blue, 11% );
     color: lighten( $mine-shaft, 4% );
-    font-size: 20px;
     font-style: italic;
     line-height: 1.8;
     margin: 0 0 24px;
@@ -296,6 +295,7 @@ a img {
     -webkit-transition: opacity 0.3s;
     -moz-transition:    opacity 0.3s;
     transition:         opacity 0.3s;
+    outline:            1px solid transparent;
 }
 
 a:hover img {

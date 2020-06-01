@@ -38,9 +38,13 @@ disablePathToLower = true
   # Display post summaries instead of content in list templates (default: true)
   #truncate = true
 
+  # Site image used to populate og:image tags.
+  images = ["/images/card.png"]
+
   [params.sidebar]
     num_recent_posts = 5
 
   [params.social]
     twitter = "decredproject"
     github = "decred"
+  
