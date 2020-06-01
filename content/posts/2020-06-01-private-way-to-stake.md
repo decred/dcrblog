@@ -18,8 +18,6 @@ constitution](https://docs.decred.org/governance/decred-constitution/):
 > implemented on a continuing and incremental basis, both proactively and
 > on-demand in response to attacks.
 
-<!--more-->
-
 In late 2019, Jake Yocom-Piatt revealed a much anticipated [privacy
 solution](https://blog.decred.org/2019/08/28/Iterating-Privacy/) for Decred -
 [CoinShuffle++ (CSPP)](https://docs.decred.org/privacy/cspp/overview/). The
@@ -37,9 +35,11 @@ users to participate in mixing. Given that up to 50% of tickets at any time are
 held by VSPs, it is reasonable to approximate that enabling VSP tickets to be
 mixed could double CSPP participation.
 
-I am pleased to announce that work on a [new VSP
-implementation](https://github.com/decred/vspd) to enable this is nearing
-completion.
+After working on the problem with [David Hill](https://github.com/dajohi) for a
+few weeks, I am pleased to announce that work on a [new VSP
+implementation](https://github.com/decred/vspd) is nearing completion.
+
+<!--more-->
 
 ## Voting Service Providers
 
