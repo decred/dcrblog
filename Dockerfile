@@ -18,7 +18,7 @@ WORKDIR /root
 
 COPY . /root/
 
-RUN hugo
+RUN hugo -F
 
 # Serve image (stable nginx version)
 FROM nginx:1.18
