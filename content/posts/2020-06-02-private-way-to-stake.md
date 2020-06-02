@@ -1,6 +1,6 @@
 ---
 title: "A More Private Way to Stake"
-date: 2020-06-01
+date: 2020-06-02
 authors:
 -  jholdstock
 tags: [Decred,cryptocurrency,privacy,Proof-of-Stake,CoinShuffle++]
