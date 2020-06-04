@@ -87,7 +87,6 @@ vspd also offers the following improvements to users:
 
 - No [redeem scripts](https://docs.decred.org/proof-of-stake/redeem-script/) to
   back up.
-- A single wallet could use a different VSP for each of its tickets.
 - Voting preferences can be set on a per-ticket basis.
 - No [address reuse](https://docs.decred.org/privacy/general-privacy/#trade-offs-of-reusing-vs-not-reusing-addresses).
 - The possibility of using multiple VSPs for a single ticket.
@@ -109,6 +108,8 @@ following changes:
   - The database is only accessed by the vspd process. There is no need to
     expose the system to additional risk by opening ports for other processes to
     access the database.
+- No need to set up and maintain an SMTP server for registration emails or
+  password recovery.
 - Voting wallet servers only require dcrwallet and dcrd to be running. There is
   no longer an additional VSP process, i.e. stakepoold, running on voting
   servers.
