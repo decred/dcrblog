@@ -1,6 +1,6 @@
 ---
 title: "Decred blockchain analysis - Part 1"
-date: 2020-06-02
+date: 2020-06-05
 authors:
 -  richardred
 tags: [Decred,cryptocurrency,privacy,Proof-of-Stake,analytics,blockchain]
