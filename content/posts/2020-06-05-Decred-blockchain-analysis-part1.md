@@ -121,15 +121,37 @@ This analysis is based on a data snapshot taken before the latest Treasury payou
 
 {{< figure src="/images/posts/onchain1/Treasury-DCR-outcomes.png" title="Outcomes for Treasury payments to contractors" >}}
 
-92,640 DCR paid out by the Treasury (~27%) has not been touched since the contractor received it. A further 30K of Treasury payments are moved at least once before remaining unspent - likely being held long term by the contractor, or possibly someone who they sold to directly. In total 35.5% of DCR paid out by the Treasury is unspent without having been staked or sent to a known exchange address.
+* 92,640 DCR paid out by the Treasury (~27%) has not been touched since the contractor received it. A further 30K of Treasury payments are moved at least once before remaining unspent - likely being held long term by the contractor, or possibly someone who they sold to directly. In total 35.5% of DCR paid out by the Treasury is unspent without having been staked or sent to a known exchange address.
 
-23.7% of the DCR paid out by the Treasury ended up in a known exchange address. At least one of the contractors appears to use an exchange address directly on their invoices.
+* 23.7% of the DCR paid out by the Treasury ended up in a known exchange address. At least one of the contractors appears to use an exchange address directly on their invoices.
 
-23.5% of this DCR has been staked, almost certainly by the contractors who received it.
+* 23.5% of this DCR has been staked, almost certainly by the contractors who received it.
 
-1.7% of the DCR received by contractors was mixed, including 0.5% that was mixed in ticket-buying transactions.
+* 1.7% of the DCR received by contractors was mixed, including 0.5% that was mixed in ticket-buying transactions.
 
-15.7% of the DCR being tracked was still moving after 3 hops and so its fate is unknown. The proportion of unknown outcomes can be further reduced by following for more hops - although this would increase the chance the contractor traded with someone else through some untracked means along the way and would thus mis-classify the outcomes. The unknown outcomes can also be reduced by adding more exchange addresses to the table which is used to check for these. There are some smaller exchanges for which I have as yet no addresses, and I am not yet bringing in data from any decentralized exchanges which list DCR.
+* 15.7% of the DCR being tracked was still moving after 3 hops and so its fate is unknown. 
+
+The proportion of unknown outcomes can be further reduced by following for more hops - although this would increase the chance the contractor traded with someone else through some untracked means along the way and would thus mis-classify the outcomes. The unknown outcomes can also be reduced by adding more exchange addresses to the table which is used to check for these. There are some smaller exchanges for which I have as yet no addresses, and I am not yet bringing in data from any decentralized exchanges which list DCR.
+
+## PoW miner spending
+
+This one is fresh out of the R terminal, so handle with care. With the PoW miner rewards I found a need a follow the taint for more hops, because for miners that use pools there will be some hops associated with the reward moving from the coinbase to the pool to their mining address and then maybe consolidating into another address before being used to buy a ticket or sent to an exchange. I followed the PoW reward taint for 5 hops, or until it reached an outcome. As there are many more transactions involved, I had to prune the data-set down as I moved through the hops to avoid memory issues. I discarded transactions where there was less than 0.1 DCR of PoW reward taint being tracked, you can see the DCR this accounts for as a line at the bottom of the graph below.
+
+At the point the database was up to, PoW miners had received a total of 580K DCR (block subsidy and transaction fees). 
+
+* 60% of the rewards have ended up in addresses associated with exchanges
+* 10% has been staked for PoS tickets
+* 6% is sitting unspent somewhere within the first 5 hops
+* The equivalent of 5 somewhat-freshly mined DCR has been mixed. Miners don't seem to mix.
+* For 34% of the PoW miners' rewards, I'm still not sure what became of them. OTC desks and lesser known exchanges probably account for some of this.
+
+{{< figure src="/images/posts/onchain1/DCR-miner-outcomes.png" title="Outcomes for Treasury payments to contractors" >}}
+
+This is based on the block time of the transactions where I detected an outcome. The outcomes occur at varying delays after the rewards were issued in a coinbase transaction, the graph shows the pieces of taint being added on as outcomes are reached. 
+
+The big event here was the shift from GPU mining to ASICs. In the early period merge mining with ETH was popular. There was speculation that miners would be selling the DCR to help cover costs, and that is supported by this data.
+
+I looked at the early Journal to put a date on ASICs launching, the first [issue](https://xaur.github.io/decred-news/journal/201804.html) already has reports of early units being received and has shipping dates for other models in late April or early May, so I went with May 1st for the vertical line. There is a clear increase in the amount of mined DCR being staked at around this time.
 
 ## Coming soon
 
