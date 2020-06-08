@@ -4,7 +4,7 @@ date: 2020-06-05
 authors:
 -  richardred
 tags: [Decred,cryptocurrency,privacy,Proof-of-Stake,analytics,blockchain]
-banner_image: "/images/posts/onchain1/unspent-DCR-type-month.png"
+banner_image: "/images/posts/onchain1/title.png"
 ---
 
 ## Getting to know the Decred blockchain
