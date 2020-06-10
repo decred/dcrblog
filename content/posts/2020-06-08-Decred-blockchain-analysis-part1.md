@@ -41,9 +41,9 @@ Let's take a look at when all the unspent DCR (as of May 2020) last moved.
 
 A lot of circulating DCR has moved in the last few months, which is no surprise to anyone who knows that about ~50% of it is participating in PoS.
 
-The other significant presence on this chart is the pre-mine of 1.68 million DCR, of which 762k remains unspent. As part of the [pre-mine](https://docs.decred.org/advanced/premine/), 4% of the eventual supply went to developers and 4% went to 2,972 airdrop participants. This allows those coins to be broken down into founder and airdrop coins.
+The other significant presence on this chart is the premine of 1.68 million DCR, of which 762k remains unspent. As part of the [pre-mine](https://docs.decred.org/advanced/premine/), 4% of the eventual supply went to developers and 4% went to 2,972 airdrop participants. This allows those coins to be broken down into founder and airdrop coins.
 
-465K of the Founders pre-mine remains untouched, along with ~290k of airdrop DCR, or 1,024 airdrops. As someone who is relatively new to on chain analysis, I found it very interesting that you can get this information simply by looking at that [transaction](https://explorer.dcrdata.org/tx/5e29cdb355b3fc7e76c98a9983cd44324b3efdd7815c866e33f6c72292cb8be6) on dcrdata. Count up the rows with Spent == false and you will get the above numbers (or would have done on the day I wrote this).
+465K of the Founders premine remains untouched, along with ~290k of airdrop DCR, or 1,024 airdrops. As someone who is relatively new to on chain analysis, I found it very interesting that you can get this information simply by looking at that [transaction](https://explorer.dcrdata.org/tx/5e29cdb355b3fc7e76c98a9983cd44324b3efdd7815c866e33f6c72292cb8be6) on dcrdata. Count up the rows with Spent == false and you will get the above numbers (or would have done on the day I wrote this).
 
 We can also look at all of the unspent DCR in terms of what its last transaction was, represented on the same graph below.
 
