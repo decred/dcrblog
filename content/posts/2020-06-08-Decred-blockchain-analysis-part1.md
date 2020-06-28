@@ -137,7 +137,7 @@ The proportion of unknown outcomes can be further reduced by following for more 
 
 This one is fresh out of the R terminal, so handle with care. With the PoW miner rewards I found a need a follow the taint for more hops, because for miners that use pools there will be some hops associated with the reward moving from the coinbase to the pool to their mining address and then maybe consolidating into another address before being used to buy a ticket or sent to an exchange. I followed the PoW reward taint for 5 hops, or until it reached an outcome. As there are many more transactions involved, I had to prune the data-set down as I moved through the hops to avoid memory issues. I discarded transactions where there was less than 0.1 DCR of PoW reward taint being tracked, you can see the DCR this accounts for as a line at the bottom of the graph below.
 
-At the point the database was up to, PoW miners had received a total of 580K DCR (block subsidy and transaction fees). 
+At the point the database was up to, PoW miners had received a total of 5.8M DCR (block subsidy and transaction fees). 
 
 * 60% of the rewards have ended up in addresses associated with exchanges
 * 10% has been staked for PoS tickets
