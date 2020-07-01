@@ -143,7 +143,7 @@ At the point the database was up to, PoW miners had received a total of 5.8M DCR
 * 10% has been staked for PoS tickets
 * 6% is sitting unspent somewhere within the first 5 hops
 * The equivalent of 5 somewhat-freshly mined DCR has been mixed. Miners don't seem to mix.
-* For 34% of the PoW miners' rewards, I'm still not sure what became of them. OTC desks and lesser known exchanges probably account for some of this.
+* For 24% of the PoW miners' rewards, I'm still not sure what became of them. OTC desks and lesser known exchanges probably account for some of this.
 
 {{< figure src="/images/posts/onchain1/DCR-miner-outcomes.png" title="Outcomes for Treasury payments to contractors" >}}
 
