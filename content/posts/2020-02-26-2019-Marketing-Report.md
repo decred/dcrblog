@@ -127,7 +127,7 @@ The most costly events took place in North America (North American Bitcoin Confe
 In total, events and meetups were held in the following countries: Argentina, Australia, Bolivia, Brazil, Canada, China, Colombia, Czech Republic, Ethiopia, Germany, Ghana, Indonesia, Italy, Mexico, Morocco, Netherlands, Nigeria, Poland, Portugal, Russia, Singapore, Thailand, Uganda, United States, and Uruguay.
 
 Reports were prepared for a majority of the biggest events from 2019, which can be found [here](https://github.com/decredcommunity/events/tree/master/reports).
-The number of events and total cost exceeded the budgeted proposals, but all were discussed publicly in [chat](https://riot.im/app/#/room/#events:decred.org) in #marketing or #events.
+The number of events and total cost exceeded the budgeted proposals, but all were discussed publicly in [chat](https://app.element.io/#/room/#events:decred.org) in #marketing or #events.
 
 
 What we learned:
