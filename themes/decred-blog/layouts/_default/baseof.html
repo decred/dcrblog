@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ .Site.BaseURL }}/css/font-awesome-4.7.0.min.css">
     
     {{ template "_internal/opengraph.html" . }}
+    {{ template "_internal/twitter_cards.html" . }}
 
     {{ "<!-- RSS 2.0 feed -->" | safeHTML }}
     {{ with .OutputFormats.Get "rss" -}}
