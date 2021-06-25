@@ -15,11 +15,11 @@ The only practical consequences of this issue are some inconvenience for operato
 
 The issue resides in an overzealous check for the maximum expenditure policy. This policy defines the maximum value that a set of treasury spend transactions that are to be included in a block may draw from the treasury.
 
-Due to the test treasury spend transaction mined in mainnet on [block 556716](https://explorer.dcrdata.org/tx/7507bcc72bfde895065034e12e6d462f2360163cd0c879f0db35514f9456b2c1), the maximum amount that can now be spent from the decentralized treasury account for the next few months is approximately 0.15 DCR, which is too low to be able to fulfill all monthly invoices in the CMS system.
+Due to the test treasury spend transaction mined in mainnet on [block 556,716](https://explorer.dcrdata.org/tx/7507bcc72bfde895065034e12e6d462f2360163cd0c879f0db35514f9456b2c1), the maximum amount that can now be spent from the decentralized treasury account for the next few months is approximately 0.15 DCR, which is too low to be able to fulfill all monthly invoices in the CMS system.
 
 While no development team enjoys finding issues in shipped software and doubly so in distributed consensus code, we need to highlight that Decred's governance model and the way the decentralized treasury functions were introduced worked as designed to prevent a bigger problem.
 
-  - The migration plan from the legacy treasury to the decentralized treasury was created to handle any cases such as this
+  - The migration plan from the legacy treasury to the decentralized treasury was created to handle any cases such as this.
   - The payments to contractors will still continue as usual, coming from the legacy treasury wallet.
   - There are no risks of the network forking, given the corresponding on-chain vote already activated the new rules and all older versions of the software are not following the main chain anymore.
   - The decentralized treasury account is still accruing its 10% block reward.
@@ -28,7 +28,7 @@ While no development team enjoys finding issues in shipped software and doubly s
 
 The rest of this document will provide more technical details about the issue, how it was introduced, how it will be fixed and its impact to the network.
 
-# In Depth Analysis
+# In-Depth Analysis
 
 For the rest of this document we assume the reader has some basic knowledge about how the new decentralized treasury feature works and how changes to the consensus rules of Decred are proposed, coded, deployed and activated.
 
@@ -51,7 +51,7 @@ This restriction would be enforced via consensus rules in the software, and thus
 
 It's important to note here that no proposal is fully detailed to the level required by actual software code and even this seemingly simple restriction has ambiguity: Decred's blockchain has no concept of "month" and standard calendar months are not easily transposable to a window of blockchain blocks of fixed size. Nevertheless, developers and stakeholders assumed this restriction could be implemented after being properly specified in terms of blockchain primitives.
 
-However, during development of the treasury feature, at this point in time at around October/2020, two objections were raised against this specific form of expenditure policy:
+However, around October/2020, during development of the treasury feature, two objections were raised against this specific form of expenditure policy:
 
   - The treasury was already spending more than it was receiving via the block reward, due to the USD/DCR exchange rate. Any further decrease would already make it impossible to pay for all monthly contractor invoices.
   - This policy is not stable over a long time frame, since the block reward is being constantly reduced. Following it strictly would mean the treasury would be unable to spend most of its funds, even if it had accumulated a large pool, since the per-month income would be small.
@@ -60,11 +60,11 @@ Therefore, a change in the expenditure policy was proposed and discussed among t
 
 > The sum of tspends inside an expenditure window cannot exceed the average of the tspends in the previous N windows in addition to an X% increase.
 
-A `window` here is a specific number of blocks, as defined by some constants in the [chaincfg](https://github.com/decred/dcrd/blob/afff2fdbcd4c57ade4f0d13e78ad2d3efaebcdec/chaincfg/mainnetparams.go#L395-L411) package. For mainnet, this cashes out as roughly:
+A `window` here is a specific number of blocks, as defined by some constants in the [chaincfg](https://github.com/decred/dcrd/blob/afff2fdbcd4c57ade4f0d13e78ad2d3efaebcdec/chaincfg/mainnetparams.go#L395-L411) package. For mainnet, this works out as roughly:
 
-> The sum of tspends within a 6912 window (aprox. 24 days) cannot exceed the average of the preceding 41472 blocks (aprox. 144 days or 4.8 30-day months) in addition to a 50% increase.
+> The sum of tspends within a 6,912 window (approx. 24 days) cannot exceed the average of the preceding 41,472 blocks (approx. 144 days or 4.8 30-day months) in addition to a 50% increase.
 
-This wording intended to preserve the original safety and policy characteristics as defined in the Politeia proposal, by capping rate at which the expenditures could grow, but still allowing enough flexibility that it could handle cases where the exchange rate dropped significantly or that the treasury had enough accumulated funds that stakeholders felt comfortable spending a larger fraction of it.
+This wording intended to preserve the original safety and policy characteristics as defined in the Politeia proposal, by capping the rate at which expenditures could grow, but still allowing enough flexibility that it could handle cases where the exchange rate dropped significantly or that the treasury had enough accumulated funds that stakeholders felt comfortable spending a larger fraction of it.
 
 We should reiterate that this is _not_ the only mechanism by which treasury expenditure is limited: in addition to the maximum expenditure check, treasury spend transactions are still subject to being signed by the Politeia keys and go through the on-chain voting process before being included in a block by a proof-of-work miner.
 
@@ -118,7 +118,7 @@ The code related to the bootstrap amount can be summarized as follows (this is a
 	//...
 ```
 
-Note the last `if` statement: if there is at least one preceding window in which a treasury spend tx ("tspend") was mined, then the average used to derive the limit is calculated as the total spent across all tspends over the number of non-empty windows. Otherwise, the bootstrap amount is used.
+Note the last `if` statement: if there is at least one preceding window in which a treasury spend transaction ("tspend") was mined, then the average used to derive the limit is calculated as the total spent across all tspends over the number of non-empty windows. Otherwise, the bootstrap amount is used.
 
 In other words, a single tspend transaction in the recent blockchain history already switches the expenditure check from using the bootstrap amount to using the historical amount.
 
@@ -140,14 +140,14 @@ It's also important to highlight that all the other checks on treasury spends ar
 
 Finally, we're now faced with a decision regarding how to recover from here on. There are two primary options:
 
-  1. Wait about 4 months (up to block 598188) until the test tspend leaves the recent policy window and the treasury can spend from the account regularly, then resume payments as is.
+  1. Wait about 4 months (up to block 598,188) until the test tspend leaves the recent policy window and the treasury can spend from the account regularly, then resume payments as is.
   2. Perform some on-chain vote to fix this issue.
   
 Being _very_ optimistic, any on-chain vote would take at least 3 months to write, deploy and activate. And we already have a possible upcoming consensus change that is currently being voted in Politeia ([Explicit Version Upgrades Consensus Change](https://proposals.decred.org/record/3a98861)) that we want to include in the next upgrade if possible.
 
 Given those prospects, the fact that the exchange rate is no longer an immediate factor in deciding the expenditure level for the treasury (when compared to the amount received from the block reward) and the fact that the currently implemented expenditure check was an explicit change from the one discussed in the proposal, we have decided to write a change to the currently implemented max expenditure check to bring it in line with what was in the original proposal, and to put it to an on-chain vote.
 
-This change will take a form of a [DCP](https://github.com/decred/dcps), along with appropriate code to implement it, to be released in a few days. Voting for this consensus rule change will happen once a new software version is released that implements this agenda (most likely also with the version upgrade change).
+This change will take a form of a [DCP](https://github.com/decred/dcps), along with appropriate code to implement it, to be released in a few days. Voting for this consensus rule change will happen once a new software version is released that implements this agenda (most likely also with the explicit version upgrade change).
 
 ## Future Improvements
 
