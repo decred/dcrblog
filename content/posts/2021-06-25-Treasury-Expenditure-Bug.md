@@ -142,8 +142,8 @@ Finally, we're now faced with a decision regarding how to recover from here on. 
 
   1. Wait about 4 months (up to block 598,188) until the test tspend leaves the recent policy window and the treasury can spend from the account regularly, then resume payments as is.
   2. Perform some on-chain vote to fix this issue.
-  
-Being _very_ optimistic, any on-chain vote would take at least 3 months to write, deploy and activate. And we already have a possible upcoming consensus change that is currently being voted in Politeia ([Explicit Version Upgrades Consensus Change](https://proposals.decred.org/record/3a98861)) that we want to include in the next upgrade if possible.
+
+Being _very_ optimistic, any on-chain vote would take at least 3 months to write, deploy and activate. On the other hand, simply waiting for the treasury to be unlocked to try again doesn't solve the underlying issue and could cause the issue to happen again.
 
 Given those prospects, the fact that the exchange rate is no longer an immediate factor in deciding the expenditure level for the treasury (when compared to the amount received from the block reward) and the fact that the currently implemented expenditure check was an explicit change from the one discussed in the proposal, we have decided to write a change to the currently implemented max expenditure check to bring it in line with what was in the original proposal, and to put it to an on-chain vote.
 
