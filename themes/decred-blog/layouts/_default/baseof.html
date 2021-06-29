@@ -12,7 +12,7 @@
     {{ $style := resources.Get "sass/main.scss" | toCSS }}
     <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
-    <link rel="stylesheet" href="{{ .Site.BaseURL }}/css/SourceSansPro.css">
+    <link rel="stylesheet" href="{{ .Site.BaseURL }}/css/fonts.css">
     <link rel="stylesheet" href="{{ .Site.BaseURL }}/css/font-awesome-4.7.0.min.css">
     
     {{ template "_internal/opengraph.html" . }}

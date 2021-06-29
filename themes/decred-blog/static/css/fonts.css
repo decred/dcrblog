@@ -26,3 +26,10 @@
   src: local('Source Sans Pro Bold Italic'), local('SourceSansPro-BoldIt'), url(/fonts/SourceSansPro-BoldIt.ttf) format('truetype');
   font-display: swap;
 }
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Source Code Pro'), local('SourceCodePro-Regular'), url(/fonts/SourceCodePro-Regular.ttf) format('truetype');
+  font-display: swap;
+}

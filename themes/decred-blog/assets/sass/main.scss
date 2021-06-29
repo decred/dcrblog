@@ -205,6 +205,19 @@
     padding-bottom: 40px;
 }
 
+.post code {
+    padding-left: 4px;
+    padding-right: 4px;
+    border-radius: 3px;
+    box-shadow: none;
+    color: #48566e;
+    background-color: #edeff1;
+}
+
+.post .highlight code {
+    background-color: initial;
+}
+
 .post.featured {
     position: relative;
 }
@@ -366,7 +379,7 @@ figure.legendfigure figcaption h4 {
         float: left;
         margin-left: -1.5em;
     }
-} 
+}
 
 /* Author box */
 .author-box {
