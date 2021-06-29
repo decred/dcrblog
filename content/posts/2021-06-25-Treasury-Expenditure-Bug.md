@@ -51,7 +51,7 @@ This restriction would be enforced via consensus rules in the software, and thus
 
 It's important to note here that no proposal is fully detailed to the level required by actual software code and even this seemingly simple restriction has ambiguity: Decred's blockchain has no concept of "month" and standard calendar months are not easily transposable to a window of blockchain blocks of fixed size. Nevertheless, developers and stakeholders assumed this restriction could be implemented after being properly specified in terms of blockchain primitives.
 
-However, around October/2020, during development of the treasury feature, two objections were raised against this specific form of expenditure policy:
+However, around October 2020, during development of the treasury feature, two objections were raised against this specific form of expenditure policy:
 
   - The treasury was already spending more than it was receiving via the block reward, due to the USD/DCR exchange rate. Any further decrease would already make it impossible to pay for all monthly contractor invoices.
   - This policy is not stable over a long time frame, since the block reward is being constantly reduced. Following it strictly would mean the treasury would be unable to spend most of its funds, even if it had accumulated a large pool, since the per-month income would be small.
