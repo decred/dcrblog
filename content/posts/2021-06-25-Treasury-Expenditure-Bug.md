@@ -4,7 +4,7 @@ date:			2021-06-25
 authors:
 -  matheusd
 tags:			[Decred, Decentralized Treasury, consensus]
-banner_image:		"/images/posts/fiat-is-rigged.png"
+banner_image:		"/images/posts/2021-06-25-Treasury-Expenditure-Bug.png"
 ---
 
 Payments from the new decentralized treasury infrastructure are currently blocked and will be delayed until a new consensus vote takes place to implement a change to the consensus rules.  Contractor payouts will continue via the legacy treasury until the changes are deployed and activated.
