@@ -21,7 +21,7 @@ COPY . /root/
 RUN hugo -F
 
 # Serve image (stable nginx version)
-FROM nginx:1.18
+FROM nginx:1.20
 
 LABEL description="dcrblog server"
 LABEL version="1.0"
