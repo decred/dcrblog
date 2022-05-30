@@ -129,4 +129,4 @@ While what Decred needs as an organization may not line up with precisely what p
 
 ### Conclusion
 
-We are excited to expand Decred's pool of contractors and continue to build out our system of decentralized governance.  We encourage interested parties to reach out on [Matrix](https://decred.org/matrix/) or [Reddit](https://reddit.com/r/decred) to inquire further.
+We are excited to expand Decred's pool of contractors and continue to build out our system of decentralized governance.  We encourage interested parties to reach out on [Matrix](https://chat.decred.org) or [Reddit](https://reddit.com/r/decred) to inquire further.
