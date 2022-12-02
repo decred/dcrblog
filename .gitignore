@@ -2,3 +2,4 @@
 /resources/
 exampleSite/
 _gen/
+.hugo_build.lock
