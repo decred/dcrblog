@@ -1,0 +1,43 @@
+---
+title:                 "What is wrong with Decred?"
+date:                  2022-12-02
+authors:
+- jy-p
+tags:                  [Decred]
+banner_image:          "/images/posts/2022-12-02-y-u-no.jpg"
+---
+
+Decred has been in production for nearly 7 years, generates a reliable stream of useful, new, non-trivial technology, and has a dedicated core set of developers and users, but it has struggled to gain wider recognition and corresponding adoption.  Many people in the cryptocurrency space have heard of or held Decred and have a positive opinion of it.  Despite this nominal awareness and Decred’s solid technological underpinnings, it would seem that recognition and adoption are hard to come by.  Critics often suggest we “market harder”, ignoring that we have already made substantive efforts over a number of years to pursue conventional marketing, spent a few million USD doing it, and done so under the direction of several marketing leads – all to limited effect.
+
+After several years as project lead, I have come to understand the Decred growth threat model as having several key components:
+
+- malicious miners - Since our tech itself is difficult to attack, malicious miners have instead chosen to covertly attack our markets, undermining the perception of Decred as relevant and useful technology.
+- lack of insider investors - The network effect derived from the participation of insider investors is substantial, and Decred has few insiders, creating issues with press, exchanges, and integrations.
+- trade media blacklisting - Key trade publications have effectively blacklisted Decred, refusing to cover even substantive project technological milestones after sustained solicitation.
+- Twitter censorship - The project account has been subject to notable acute censorship on Twitter – the primary communication platform for cryptocurrency - since fall of 2017, when we received coverage for our standalone atomic swap tool.
+
+Doing more of what has already failed (conventional marketing) is unlikely to fix any of these problems.  Instead, we have chosen to address what we see as a major societal problem using Decred.  This is the first article in a series, meant to give context to a new subproject.
+
+## Malicious miners
+
+Per my [successfully-implemented proposal](https://proposals.decred.org/record/427e1d4) and the [related articles from tacorevenge](https://medium.com/@tacorevenge), Decred has been under attack for an indeterminate amount of time by malicious miners.  Instead of targeting any of the internals of Decred tech, they have chosen to attack Decred markets, where they control price action and order book depth to make Decred appear to be a bad investment.  While we have gone a long ways to combat these miners, it is apparent that positive price action alone is insufficient to defeat them.  To overcome these malicious actors, we must grow our network under these undesirable market conditions.
+
+## Lack of insiders
+
+Most cryptocurrency projects have several “insider” investors, which is shorthand for celebrities, unusually wealthy individuals, or institutional investors, and these insiders make their existing social networks available to the project.  In many cases, insiders are given early preferential access to buying into a project, e.g. in early fundraising rounds, and are highly financially incentivized to help the project.  Decred had no such insiders at launch and instead chose to airdrop equal amounts of DCR to roughly 3,000 people who signed up.  We have had a few insiders involved with the project over its lifespan, but many of them have exited their positions, presumably because of our long periods of negative price action.  While Decred’s staking system is built around equalization of power and does not cater to insiders, one must acknowledge that insiders have a role and contribute to most other cryptocurrency projects.
+
+Our current insiders lack the networks required to gain preferential access to press, exchange listings, or integrations, and this hurts our ability to attract additional insiders.  The difficulty of getting positive press coverage and major fiat exchange listings is real, underlining the extent to which these domains have much less to do with merit than with who you know.  For example, without “2 reliable sources”, meaning “2 dedicated articles written by staff journalists from a major mainstream media outlet about a project”, Wikipedia moderators will delete project pages, claiming they are “irrelevant”.  Projects with zero major development milestones have Wikipedia pages because of this criteria.  Without insiders, navigating rigged establishment structures is much more difficult.
+
+## Trade media blacklisting
+
+Even before launch in February 2016, Decred had to deal with being targeted by [a hit piece in Cointelegraph](https://cointelegraph.com/news/decred-an-innovative-cryptocurrency-or-a-well-arranged-scam) featuring negative comments from none other than Vitalik Buterin and Anthony Di Iorio – 2 of 3 Ethereum co-founders – in December 2015.  Unbeknownst to me, this would set the tone for the next several years.  Major trade publications, which shall remain unnamed, have refused and continue to refuse to cover any of Decred’s substantive technological milestones that have occurred over the past several years.  Multiple trade publications have spiked articles about Decred and then ghosted our contacts with them.  As a result, we have had to nose about in attempts to find publications that would actually cover our work.  Several PR people have tried very hard to overcome these hurdles, to little effect.  As best I can tell, this has less to do with PR underperformance and more to do with publication management shenanigans.  If a project is not in the right portfolio or runs afoul of the wrong owner, it can suffer the same blacklisting as Decred.
+
+## Twitter censorship
+
+Last but certainly not least, the Decred project account on Twitter has been acutely censored since fall 2017.  Twitter is the dominant platform for cryptocurrency communications an has been for many years, making this censorship all the more damaging.  In fall of 2017, we released [an open source tool for executing atomic swaps between Decred, Litecoin, and Bitcoin](https://github.com/decred/atomicswap) and [demonstrated it publicly live with Charlie Lee](https://twitter.com/satoshilite/status/910534107058233344), one of our few historical insiders.  As a result of this demonstration, there was a huge surge in Twitter followers, tens of thousands of new followers in a matter of several hours.  Prior to this demonstration, project tweets would get decent engagement and our follower count slowly increased over time.  Within several days of this demonstration, the follower count started monotonically dropping, engagement with normal tweets dropped to nearly zero, and this monotonic decrease in follower count continued for multiple years.  After personally following the project account several years ago, I have only once seen a project account tweet appear in my timeline, and this was after many minutes of scrolling down.  The best hypothesis I have heard is that the project account (@decredproject) has been added to some sort of internal censorship blacklist microservice at Twitter.  Project account tweets and tweets about Decred more generally receive only a small number of likes, almost zero engagement, and appear to have artificially limited reach.
+
+## Conclusion
+
+Decred has a challenging threat model to operate under in the context of marketing.  It is not clear to what extent other projects share a similar threat model, but many projects of similar market capitalization have much larger project account follower counts on Twitter and have better engagement.  Many groups in a similar situation would have already given up and simply created a new chain, which my developers and I could have easily done several times over.  Decred has had a very rough go of it on the marketing front and this has inspired a correspondingly substantive pivot.
+
+The threats I have described are major contributing factors that render a conventional marketing push very unlikely to succeed.  The inference is that Decred should attempt to grow its network without conventional marketing.  The path forward is not through, but around.  To understand the path being proposed, it is instructive to examine the world’s current largest software platform, “The Web”.  Major problems exist with The Web, which I will cover in the following article, and we plan to address several of them with our coming release.
