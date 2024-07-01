@@ -184,7 +184,7 @@ What we learned:
 + The website has been simplified such that future large scale updates should take fewer than three months to complete from ideation to publication.
 
 ### Decred in Depth Podcast
-Angelo produced fifteen episodes of Decred in Depth in 2019, roughly two per month. The majority of the content is not dated, so it will remain useful. Here is a list of episodes in order of release, which can be found [here](https://decredindepth.libsyn.com/).
+Angelo produced fifteen episodes of Decred in Depth in 2019, roughly two per month. The majority of the content is not dated, so it will remain useful. Here is a list of episodes in order of release, which can be found [here](https://www.youtube.com/watch?v=rcEJuN7zh2M&list=PLaMrpvQ0yJ_xCCuF6J71z_ZECi7fwZXdv).
 + Jonathan Zeppettini (jz) + DCR 101
 + Luke Powell - Politeia + DCR Time
 + Joel Monegro - Placeholder Capital DCR Investment Thesis
