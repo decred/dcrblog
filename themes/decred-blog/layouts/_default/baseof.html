@@ -9,7 +9,7 @@
     <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>
 
     {{ "<!-- combined, minified CSS -->" | safeHTML }}
-    {{ $style := resources.Get "sass/main.scss" | toCSS }}
+    {{ $style := resources.Get "sass/main.scss" | css.Sass }}
     <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
     {{ $fonts := resources.Get "css/fonts.css" }}

@@ -3,12 +3,13 @@ languageCode = "en-us"
 title = "Decred Blog"
 theme = "decred-blog"
 
-paginate = 5
-
 copyright = "[DECRED BLOG](https://blog.decred.org/) ALL RIGHTS RESERVED."
 
 # disablePathToLower is necessary to maintain backwards compatability with old blog links
 disablePathToLower = true
+
+[pagination]
+  pagerSize = 5
 
 [taxonomies]
   author = "authors"
