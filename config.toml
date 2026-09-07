@@ -8,6 +8,11 @@ copyright = "[DECRED BLOG](https://blog.decred.org/) ALL RIGHTS RESERVED."
 # disablePathToLower is necessary to maintain backwards compatability with old blog links
 disablePathToLower = true
 
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true # allow raw html within markdown files
+
 [pagination]
   pagerSize = 5
 
